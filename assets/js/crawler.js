@@ -109,6 +109,8 @@
             sitemapRequest.abort();
         }
 
+        console.log(refererSite);
+
         sitemapRequest = $.ajax({
             url: crawler_ajax_obj.ajaxurl,
             type: "post",
@@ -117,7 +119,7 @@
                 links: sitemapLinks.splice(0, 50),
                 sitemap: sitemap,
                 domain: domain,
-                referer_site: refererSite[0]
+                referer_site: refererSite
             }
         });
 
@@ -172,6 +174,8 @@
 
         // Callback handler that will be called on success
         request.done(function (response){
+
+            console.log(response);
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 

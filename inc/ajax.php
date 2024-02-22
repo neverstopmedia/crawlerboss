@@ -167,10 +167,10 @@ add_action( 'wp_ajax_match_sites_chunk', 'match_sites_chunk' );
  */
 function crawl_sitemap_sets(){
 
-    $links      = $_POST['links'];
-    $sitemap    = $_POST['sitemap'];
-    $domain     = $_POST['domain'];
-    $referer_site = $_POST['referer_site'];
+    $links          = $_POST['links'];
+    $sitemap        = $_POST['sitemap'];
+    $domain         = $_POST['domain'];
+    $referer_site   = $_POST['referer_site'];
 
     if( $results = crawlIndividualSitemap( $links, $sitemap, $domain, $referer_site ) )
     wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $results ] );

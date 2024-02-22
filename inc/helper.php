@@ -114,6 +114,35 @@ function getBacklinkDistributionByNetwork( $backlinks ){
 
 }
 
+/**
+ * Cleans up the backlink data to make them representable
+ * 
+ * @since 1.0.0
+ */
+function cleanBacklinkData( $data ){
+
+    foreach( $data as $key => $item ){
+
+        unset( $data[$key]['referer_id'] );
+
+        $data[$key]['link_from']    = explode( ', ', $item['link_from'] );
+        $data[$key]['link_to']      = explode( ', ', $item['link_to'] );
+        $data[$key]['rel']          = explode( ', ', $item['rel'] );
+        $data[$key]['content']      = explode( ', ', $item['content'] );
+        
+        foreach( $data[$key]['rel'] as $_key => $rel ){
+
+            if( empty($rel) )
+            $data[$key]['rel'][$_key] = 'follow';
+
+        }
+        
+    }
+
+    return $data;
+
+}
+
 function time_elapsed_string($datetime, $full = false) {
     $now = new DateTime;
     $ago = new DateTime($datetime);
