@@ -2,6 +2,7 @@
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\CssSelector\CssSelectorConverter;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * @var $url - The URL to test on
@@ -49,8 +50,7 @@ function setParentSitemap( $url, $siteID, $suffix = null ){
 
         return setParentSitemap( $redirectURL, $siteID );
 
-    }
-    elseif( $statusCode == 200 ){
+    }elseif( $statusCode == 200 ){
 
         update_field( 'sitemap_url', $url, $siteID );
         return $url;
@@ -190,18 +190,24 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
         if( empty($last_checked) || ( !empty($last_checked) && ( strtotime( $sitemap['last_modified'] ) > strtotime($last_checked)  ) ) ){
 
             $client = HttpClient::create();
-            $response = $client->request(
-                'GET',
-                $sitemap['sitemap'],
-                [
-                    'max_redirects' => 0,
-                    'timeout'       => 60
-                ]
-            );
 
-            // Incase the sitemap is now a 404, 3xx or whatever, lets skip it
-            if( $response->getStatusCode() != 200 )
-            continue;
+            try{
+                $response = $client->request(
+                    'GET',
+                    $sitemap['sitemap'],
+                    [
+                        'max_redirects' => 0,
+                        'timeout'       => -1
+                    ]
+                );
+    
+                // Incase the sitemap is now a 404, 3xx or whatever, lets skip it
+                if( $response->getStatusCode() != 200 )
+                continue;
+
+            } catch (TransportExceptionInterface $e) {
+                return false;
+            }
 
             $xml = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
 
@@ -267,18 +273,23 @@ function crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ){
  */
 function checkPage( $siteToCheck, $domain ){
 
-    $client = HttpClient::create();
-    $response = $client->request(
-        'GET',
-        $siteToCheck['domain'],
-        [
-            'max_redirects' => 0,
-            'timeout'       => 60
-        ]
-    );
+    try{
+        $client = HttpClient::create();
+        $response = $client->request(
+            'GET',
+            $siteToCheck['domain'],
+            [
+                'max_redirects' => 0,
+                'timeout'       => -1
+            ]
+        );
 
-    if( $response->getStatusCode() != 200 )
-    return false;
+        if( $response->getStatusCode() != 200 )
+        return false;
+
+    } catch (TransportExceptionInterface $e) {
+        return false;
+    }
 
     if( !$content = $response->getContent() )
     return false;
