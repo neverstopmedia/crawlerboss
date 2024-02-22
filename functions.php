@@ -20,7 +20,7 @@ include 'inc/crawler-actions.php';
 
 require CRAWLER_DIR . '/plugin-update-checker/plugin-update-checker.php';
 $update_checker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/neverstopmedia/crawler-boss',
+    'https://github.com/neverstopmedia/crawlerboss',
     __FILE__,
     get_template()
 );
