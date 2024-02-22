@@ -2873,7 +2873,9 @@ nav.woocommerce-pagination ul {
 .w-40px{
     width: 40px;
 }
-
+.mw-20{
+    max-width: 20px;
+}
 .mw-60 {
     max-width: 60px;
 }

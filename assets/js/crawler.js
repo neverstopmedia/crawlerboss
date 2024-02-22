@@ -100,6 +100,7 @@
         });
     
     }
+
     function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount){
 
         let sitemapRequest;
@@ -171,7 +172,7 @@
 
         // Callback handler that will be called on success
         request.done(function (response){
-            
+
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
                 finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
@@ -242,7 +243,7 @@
 
                 if(response.data.cache == true){
 
-
+                    $(".crawl--results").html(response.data.markup);
 
                     return true;
                 }

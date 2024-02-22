@@ -89,14 +89,23 @@ add_action( 'wp_ajax_get_sites', 'get_sites_callback' );
  */
 function crawl_callback(){
 
-    // Check if the site has been crawled the last 7 days
+    $last_checked = get_field( 'last_checked', $_POST['site_id'] );
+
+    // @TODO: Check if the site has been crawled the last 7 days
     if( !empty($last_checked) && ( strtotime( $last_checked ) > strtotime('-7 day') ) ){
+
+        ob_start();
+        get_template_part( 'template-parts/site-results', null, $_POST['site_id'] );
+        $markup = ob_get_clean();
+
+        wp_send_json_success( [ 'cache' => true, 'markup' => $markup ] );
 
     }
 
     $args = array(
         'post_type'         => 'site',
         'posts_per_page'    => -1,
+        'post__not_in'      => [ $_POST['site_id'] ]
     );
 
     $query = new WP_Query( $args );
@@ -132,7 +141,7 @@ add_action( 'wp_ajax_crawl_callback', 'crawl_callback' );
 function match_sites_chunk(){
     
     $siteID = isset($_POST['site_id']) ? $_POST['site_id'] : null;
-    $site  = isset($_POST['site']) ? $_POST['site'] : null;
+    $site   = isset($_POST['site']) ? $_POST['site'] : null;
 
     if( !$siteID )
     wp_send_json_error( [ 'message' => 'Invalid Site' ] );

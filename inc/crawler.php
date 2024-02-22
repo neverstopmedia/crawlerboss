@@ -128,7 +128,7 @@ function checkSite( $chunk, $siteID ){
      * Let's extract the domain and tld from the URL so we can start checking it.
      */
     if( $domain = extractDomain(get_field( 'domain', $siteID )) ){
-        
+
         foreach( $chunk as $siteToCheck ){
 
             // First, lets check the site, and see if we have any index links before proceeding to anything else
@@ -221,14 +221,19 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
                 wp_send_json_success( [ 'code' => 'CRAWL_HEARTBEAT', 'sitemap_links' => $xml, 'sitemap' => $sitemap, 'domain' => $domain, 'refererSite' => $refererSite ] );
 
             }else{
-                $results = crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite );
+
+                if( $results = crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ) )
+                return $results;
+
+                continue;
+
             }
       
         }
 
     }
 
-    return $results;
+    return false;
 
 }
 

@@ -57,3 +57,24 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+.card b{
+    font-weight: 600;
+}
+.card{
+    border: 1px solid var(--color-borders);
+    border-radius: 8px;
+    margin-bottom: 30px;
+    height: calc(100% - 30px);
+}
+.card-header{
+    padding: 20px;
+    border-bottom: 1px solid var(--color-borders);
+}
+.card-header p{
+    font-size: 16px;
+    margin: 0;
+    font-weight: 700;
+}
+.card-body{
+    padding: 20px;
+}

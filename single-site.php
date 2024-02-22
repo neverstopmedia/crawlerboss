@@ -11,7 +11,38 @@
  * @package crawler
  */
 get_header();
+
+$last_checked = get_field( 'last_checked' );
 ?>
 
+<div class="container py-40">
+    
+    <div class="d-flex ai-c jc-b mb-40">
+        <div>
+            <h1 class="mb-5"><?php the_title(); ?></h1>
+            <span> <b>Last Crawled: </b> <?php echo $last_checked ? time_elapsed_string($last_checked) : 'Not Crawled yet' ?></span>
+        </div>
+        <a href="<?php echo get_home_url('/') ?>" class="btn btn-primary">Back home</a>
+    </div>
+
+    <div class="row">
+        <div class="md-4">
+            <?php get_template_part( 'template-parts/crawl-modules/general' ) ?>
+        </div>
+        <div class="md-4">
+            <?php get_template_part( 'template-parts/crawl-modules/backlink-count' ) ?>
+        </div>
+        <div class="md-4">
+            <?php get_template_part( 'template-parts/crawl-modules/sitemaps' ) ?>
+        </div>
+        <div class="md-4">
+            <?php get_template_part( 'template-parts/crawl-modules/keyword-distribution' ) ?>
+        </div>
+        <div class="md-8">
+            <?php get_template_part( 'template-parts/crawl-modules/details' ) ?>
+        </div>
+    </div>
+    
+</div>
 
 <?php get_footer(); ?>
