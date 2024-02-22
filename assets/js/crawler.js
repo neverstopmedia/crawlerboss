@@ -29,8 +29,6 @@
      */
     function finalizeSiteCrawl( chunk, siteToCrawl, start, sites, siteID, crawlCount ){
 
-        console.log( chunk, siteToCrawl, start, sites, siteID, crawlCount );
-
         // Let's convert the object of objects into an array, and filter out the false responses.
         let arrayResponse = Object.keys(chunk).map((key) => chunk[key]).filter(Boolean);
 
@@ -110,8 +108,6 @@
             sitemapRequest.abort();
         }
 
-        console.log(sitemapLinks);
-
         sitemapRequest = $.ajax({
             url: crawler_ajax_obj.ajaxurl,
             type: "post",
@@ -125,8 +121,6 @@
         });
 
         sitemapRequest.done(function (response){
-
-            console.log(response);
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
                 finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
