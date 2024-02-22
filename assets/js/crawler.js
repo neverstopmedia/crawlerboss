@@ -113,7 +113,7 @@
             type: "post",
             data: {
                 action: 'crawl_sitemap_sets',
-                links: sitemapLinks.splice(0, 100),
+                links: sitemapLinks.splice(0, 50),
                 sitemap: sitemap,
                 domain: domain,
                 referer_site: refererSite[0]
