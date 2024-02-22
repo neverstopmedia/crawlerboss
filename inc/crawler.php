@@ -207,7 +207,7 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
 
             // If we have more than 100 pages in a sitemap, lets split the tasks
             // into different calls so we dont get a 5xx response code
-            if( count($xml) > 100 ){
+            if( count($xml) > 50 ){
 
                 // At this point, we will not return a result, and match_sites_chunk will stop, and 
                 // we will move onto the next step, which is splitting the sitemap links
