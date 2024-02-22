@@ -132,21 +132,43 @@ add_action( 'wp_ajax_crawl_callback', 'crawl_callback' );
 function match_sites_chunk(){
     
     $siteID = isset($_POST['site_id']) ? $_POST['site_id'] : null;
-    $chunk  = isset($_POST['chunk']) ? $_POST['chunk'] : null;
+    $site  = isset($_POST['site']) ? $_POST['site'] : null;
 
     if( !$siteID )
     wp_send_json_error( [ 'message' => 'Invalid Site' ] );
 
-    if( !$chunk )
-    wp_send_json_error( [ 'message' => 'No site chunk to check with' ] );
+    if( !$site )
+    wp_send_json_error( [ 'message' => 'No site to check with' ] );
 
-    if( !$chunk_state = checkChunk( $chunk, $siteID ) )
+    if( !$chunk_state = checkSite( $site, $siteID ) )
     wp_send_json_error( [ 'message' => 'Something went wrong, please contact developer' ] );
     
-    wp_send_json_success( [ 'message' => 'Chunk processed', 'chunk' => $chunk ] );
+    wp_send_json_success( [ 'message' => 'Site processed', 'site' => $site ] );
 
 }
 add_action( 'wp_ajax_match_sites_chunk', 'match_sites_chunk' );
+
+/**
+ * This function will attempt to crawl sitemaps in different calls
+ * if a sitemap has more than 100 links.
+ * 
+ * #Step 3.1
+ * 
+ * @since 1.0.0
+ */
+function crawl_sitemap_sets(){
+
+    $links      = $_POST['links'];
+    $sitemap    = $_POST['sitemap'];
+    $domain     = $_POST['domain'];
+    $referer_site = $_POST['referer_site'];
+
+    if( $results = crawlIndividualSitemap( $links, $sitemap, $domain, $referer_site ) )
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $results ] );
+
+    wp_send_json_error( ['message' => 'Could not find a link in the current set, moving on'] );
+}
+add_action( 'wp_ajax_crawl_sitemap_sets', 'crawl_sitemap_sets' );
 
 /**
  * Saves the site data in the DB after crawl

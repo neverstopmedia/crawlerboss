@@ -117,7 +117,7 @@ function setInnerSitemaps( $sitemapURL, $siteID ){
  * 
  * @since 1.0.0
  */
-function checkChunk( $chunk, $siteID ){
+function checkSite( $chunk, $siteID ){
 
     if( !$chunk || !is_array($chunk) || empty($siteID) )
     return false;
@@ -143,7 +143,7 @@ function checkChunk( $chunk, $siteID ){
                 // If the option is enabled, lets skip the sitemap check. E.G. Sites with big 
                 if( get_field( 'skip_sitemap', $siteToCheck['id'] ) )
                 continue;
-
+                
                 // Let's start checking the sitemaps.
                 $chunkBreakdown[$siteToCheck['id']] = checkSitemaps( $siteToCheck, $siteID, $domain );
 
@@ -153,7 +153,7 @@ function checkChunk( $chunk, $siteID ){
 
     }
     
-    return wp_send_json($chunkBreakdown);
+    return wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
 
 }
 
@@ -180,6 +180,8 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
     // Let's sort the sitemap to have post-sitemaps at the end
     usort($refererSitemaps, 'sitemapSort');
 
+    $results = false;
+
     foreach( $refererSitemaps as $sitemap ){
 
         // Check if $last_checked is empty. Meaning that we didn't crawl the domain yet
@@ -203,25 +205,55 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
 
             $xml = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
 
-            foreach( $xml as $item ){
+            // If we have more than 100 pages in a sitemap, lets split the tasks
+            // into different calls so we dont get a 5xx response code
+            if( count($xml) > 100 ){
 
-                $siteToCheck = [
-                    'id' => $refererSite['id'], 
-                    'domain' => (string)$item->loc,
-                    'source' => $sitemap['sitemap'],
-                    'source_modified' => $sitemap['last_modified']
-                ];
+                // At this point, we will not return a result, and match_sites_chunk will stop, and 
+                // we will move onto the next step, which is splitting the sitemap links
+                // and then processing them into sets of 100, then returning the result there to continue.
+                wp_send_json_success( [ 'code' => 'CRAWL_HEARTBEAT', 'sitemap_links' => $xml, 'sitemap' => $sitemap, 'domain' => $domain, 'refererSite' => $refererSite ] );
 
-                if( $results = checkPage( $siteToCheck, $domain ) )
-                return $results;
-                
+            }else{
+                $results = crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite );
             }
       
         }
 
     }
 
-    return false;
+    return $results;
+
+}
+
+/**
+ * Crawls an individual sitemap
+ * 
+ * @since 1.0.0
+ */
+function crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ){
+
+    $found = false;
+
+    foreach( $xml as $item ){
+
+        $siteToCheck = [
+            'id' => $refererSite['id'], 
+            'domain' => is_array($item) ? $item['loc'] : (string)$item->loc,
+            'source' => $sitemap['sitemap'],
+            'source_modified' => $sitemap['last_modified']
+        ];
+
+        // As soon as we find one link on a page, lets break from the loop
+        // and return the results, we dont care about the other pages anymore
+        if( $results = checkPage( $siteToCheck, $domain ) ){
+            $found = $results;
+            break;
+        }
+        
+    }
+
+    return $found;
 
 }
 

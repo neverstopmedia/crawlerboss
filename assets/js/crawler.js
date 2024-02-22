@@ -18,6 +18,43 @@
     }
 
     /**
+     * Finalizes the process of a single site within the crawl
+     * 
+     * @param {Boolean|Array} chunk The response, false or array
+     * @param {Array} siteToCrawl - The site we are crawling
+     * @param {Date} start - Start time
+     * @param {Array} sites - The list of remaining sites to crawl
+     * @param {Int} siteID - Site ID that we are crawling
+     * @param {Int} crawlCount - The current crawl count
+     */
+    function finalizeSiteCrawl( chunk, siteToCrawl, start, sites, siteID, crawlCount ){
+
+        // Let's convert the object of objects into an array, and filter out the false responses.
+        let arrayResponse = Object.keys(chunk).map((key) => chunk[key]).filter(Boolean);
+
+        if( arrayResponse.length )
+        processedSites.push( arrayResponse );
+        
+        $('#site-'+crawlCount).addClass('complete').text( `${siteToCrawl[0].domain} completed in ${Date.now() - start} ms` )
+        crawlCount++;
+
+        if( sites.length ){
+            processSitesChunk(sites, siteID, crawlCount);
+        }else{
+
+            $(".loader").text('Complete').removeClass('loader');
+            $(".working").removeClass('working').addClass('complete').next().addClass('working').removeClass('pending').find('small').html('').addClass('loader');
+
+            // Run a new ajax call to save the data.
+            if( processedSites.flat(1).length ){
+                saveSiteData( processedSites.flat(1), siteID );
+            }
+            
+        }
+
+    }
+
+    /**
      * Ajax call to save the data of a crawl for a particular site.
      * 
      * #Step 3
@@ -64,23 +101,61 @@
     
     }
 
+    function processSitemapLinks(sitemapLinks, sitemap, domain, refererSite, siteToCrawl, start, sites, siteID, crawlCount){
+
+        let sitemapRequest;
+
+        if (sitemapRequest) {
+            sitemapRequest.abort();
+        }
+
+        console.log(sitemapLinks);
+
+        sitemapRequest = $.ajax({
+            url: crawler_ajax_obj.ajaxurl,
+            type: "post",
+            data: {
+                action: 'crawl_sitemap_sets',
+                links: sitemapLinks.splice(0, 100),
+                sitemap: sitemap,
+                domain: domain,
+                referer_site: refererSite[0]
+            }
+        });
+
+        sitemapRequest.done(function (response){
+
+            console.log(response);
+
+            if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
+                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
+            }
+
+            if( sitemapLinks.length ){
+                processSitemapLinks( sitemapLinks, sitemap, domain, siteToCrawl, start, sites, siteID, crawlCount );
+            }
+
+        });
+
+    }
+
     /**
      * Accept a chunk of sites as an array, and crawl them
      * 
      * #Step 2
      * @param {Array} chunk 
      */
-    function processSitesChunk( sites, siteID, chunkCount ){
+    function processSitesChunk( sites, siteID, crawlCount ){
 
         let request;
 
         // Start date of the crawling process
         const start = Date.now();
 
-        let chunkedSites = sites.splice(0, 1);
+        // Change this to change the number of sites crawled in a single call
+        let siteToCrawl = sites.splice(0, 1);
 
-        // Let's group the sites into chunks of 10 and process
-        $(".working").append(`<div id="chunk-${chunkCount}" class="description">${chunkCount}. Processing ${chunkedSites[0].domain}</div>`);
+        $(".working").append(`<div id="site-${crawlCount}" class="description">${crawlCount}. Processing ${siteToCrawl[0].domain}</div>`);
 
         // Abort any pending request
         if (request) {
@@ -92,35 +167,22 @@
             type: "post",
             data: {
                 action: 'match_sites_chunk',
-                chunk: chunkedSites,
+                site: siteToCrawl,
                 site_id: siteID
             }
         });
 
         // Callback handler that will be called on success
         request.done(function (response){
-
-            // Let's convert the object of objects into an array, and filter out the false responses.
-            let arrayResponse = Object.keys(response).map((key) => response[key]).filter(Boolean);
-
-            if( arrayResponse.length )
-            processedSites.push( arrayResponse );
             
-            $('#chunk-'+chunkCount).addClass('complete').text( `${chunkedSites[0].domain} completed in ${Date.now() - start} ms` )
-            chunkCount++;
+            if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
-            if( sites.length ){
-                processSitesChunk(sites, siteID, chunkCount);
-            }else{
-
-                $(".loader").text('Complete').removeClass('loader');
-                $(".working").removeClass('working').addClass('complete').next().addClass('working').removeClass('pending').find('small').html('').addClass('loader');
-
-                // Run a new ajax call to save the data.
-                if( processedSites.flat(1).length ){
-                    saveSiteData( processedSites.flat(1), siteID );
-                }
+                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
                 
+            }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
+
+                processSitemapLinks( response.data.sitemap_links.url, response.data.sitemap, response.data.domain, siteToCrawl, response.data.refererSite, start, sites, siteID, crawlCount );
+
             }
             
         });
@@ -128,7 +190,7 @@
         // Callback handler that will be called regardless
         // if the request failed or succeeded
         request.always(function () {
-            chunkCount++;
+            crawlCount++;
         });
 
     }
@@ -213,6 +275,5 @@
         });
 
     });
-
 
 })(jQuery);
