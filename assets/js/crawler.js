@@ -29,6 +29,8 @@
      */
     function finalizeSiteCrawl( chunk, siteToCrawl, start, sites, siteID, crawlCount ){
 
+        console.log( chunk, siteToCrawl, start, sites, siteID, crawlCount );
+
         // Let's convert the object of objects into an array, and filter out the false responses.
         let arrayResponse = Object.keys(chunk).map((key) => chunk[key]).filter(Boolean);
 
@@ -100,8 +102,7 @@
         });
     
     }
-
-    function processSitemapLinks(sitemapLinks, sitemap, domain, refererSite, siteToCrawl, start, sites, siteID, crawlCount){
+    function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount){
 
         let sitemapRequest;
 
@@ -132,7 +133,9 @@
             }
 
             if( sitemapLinks.length ){
-                processSitemapLinks( sitemapLinks, sitemap, domain, siteToCrawl, start, sites, siteID, crawlCount );
+                processSitemapLinks( sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount );
+            }else{
+                finalizeSiteCrawl( [ false ], siteToCrawl, start, sites, siteID, crawlCount );
             }
 
         });
