@@ -101,15 +101,29 @@
     
     }
 
-    function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount){
+    /**
+     * Process a list of sitemap links
+     * 
+     * #Step 3.1
+     *
+     * @param {Array} sitemapLinks - The list of links we are crawling
+     * @param {Array} sitemap - The sitemap we are crawling [lastmod, sitemap]
+     * @param {String} domain - The domain we are trying to look for
+     * @param {Array} siteToCrawl - The site we are crawling
+     * @param {Array} refererSite - The site we are searching in
+     * @param {Date} start - Start time for the crawl
+     * @param {Array} sites - List of all sites
+     * @param {Int} siteID - The ID of the site we are trying to look for
+     * @param {Int} crawlCount - The current count in the crawl
+     * @param {Array} refererSitemaps - The sitemaps of the referer site
+     */
+    function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount, refererSitemaps){
 
         let sitemapRequest;
 
         if (sitemapRequest) {
             sitemapRequest.abort();
         }
-
-        console.log(refererSite);
 
         sitemapRequest = $.ajax({
             url: crawler_ajax_obj.ajaxurl,
@@ -130,9 +144,100 @@
             }
 
             if( sitemapLinks.length ){
-                processSitemapLinks( sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount );
+                processSitemapLinks( 
+                    sitemapLinks, 
+                    sitemap, 
+                    domain, 
+                    siteToCrawl, 
+                    refererSite, 
+                    start, 
+                    sites, 
+                    siteID, 
+                    crawlCount,
+                    refererSitemaps
+                );
             }else{
-                finalizeSiteCrawl( [ false ], siteToCrawl, start, sites, siteID, crawlCount );
+
+                if( !refererSitemaps.length ){
+                    finalizeSiteCrawl( [ false ], siteToCrawl, start, sites, siteID, crawlCount );
+                    return;
+                }
+
+                // Let's remove the first element from the array of sitemaps so we can process the next
+                refererSitemaps.shift();
+
+                jumpToNextSitemap(
+                    refererSite,
+                    siteID,
+                    domain,
+                    refererSitemaps,
+                    siteToCrawl,
+                    start,
+                    sites,
+                    crawlCount
+                );
+
+            }
+
+        });
+
+    }
+
+    /**
+     * After crawling one sitemap in a CRAWL_HEARTBEAT let's jump to the next sitemap
+     * 
+     * @param {Array} refererSite - The site we are searching in
+     * @param {Int} siteID - The ID of the site we are trying to look for
+     * @param {String} domain - The domain we are trying to look for
+     * @param {Array} refererSitemaps - The sitemaps of the referer site
+     * @param {Array} siteToCrawl - The site we are crawling
+     * @param {Date} start - Start time for the crawl
+     * @param {Array} sites - List of all sites
+     * @param {Int} crawlCount - The current count in the crawl
+     * 
+     * #Step 3.2
+     */
+    function jumpToNextSitemap(refererSite, siteID, domain, refererSitemaps, siteToCrawl, start, sites,  crawlCount){
+
+        let request;
+
+        if (request) {
+            request.abort();
+        }
+
+        request = $.ajax({
+            url: crawler_ajax_obj.ajaxurl,
+            type: "post",
+            data: {
+                action: 'jump_to_next_sitemap',
+                referer_site: refererSite,
+                site_id: siteID,
+                domain: domain,
+                referer_sitemaps: refererSitemaps
+            }
+        });
+
+        request.done(function (response){
+
+            if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
+
+                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
+                
+            }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
+
+                processSitemapLinks( 
+                    response.data.sitemap_links.url, 
+                    response.data.sitemap, 
+                    response.data.domain, 
+                    siteToCrawl, 
+                    response.data.referer_site, 
+                    start, 
+                    sites, 
+                    siteID, 
+                    crawlCount,
+                    refererSitemaps
+                );
+
             }
 
         });
@@ -183,7 +288,18 @@
                 
             }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
 
-                processSitemapLinks( response.data.sitemap_links.url, response.data.sitemap, response.data.domain, siteToCrawl, response.data.refererSite, start, sites, siteID, crawlCount );
+                processSitemapLinks( 
+                    response.data.sitemap_links.url, 
+                    response.data.sitemap, 
+                    response.data.domain, 
+                    siteToCrawl, 
+                    response.data.referer_site, 
+                    start, 
+                    sites, 
+                    siteID, 
+                    crawlCount,
+                    response.data.referer_sitemaps
+                );
 
             }
             

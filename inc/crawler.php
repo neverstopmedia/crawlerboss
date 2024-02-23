@@ -145,7 +145,8 @@ function checkSite( $chunk, $siteID ){
                 continue;
                 
                 // Let's start checking the sitemaps.
-                $chunkBreakdown[$siteToCheck['id']] = checkSitemaps( $siteToCheck, $siteID, $domain );
+                $refererSitemaps = get_field( 'sitemaps', $siteToCheck['id'] );
+                $chunkBreakdown[$siteToCheck['id']] = checkSitemaps( $siteToCheck, $siteID, $domain, $refererSitemaps );
 
             }
 
@@ -153,23 +154,22 @@ function checkSite( $chunk, $siteID ){
 
     }
     
-    return wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
 
 }
 
 /**
- * @var $refererSite - The site in which we are cross checking, not the domain
+ * @var $refererSite - The site in which we are looking in
  *      $refererSite['domain']
  *      $refererSite['id']
  * 
  * @var $siteID - The domain ID we are trying to find on other sites.
  * @var $domain - The domain name we are trying to find on the other sites
+ * @var $refererSitemaps - The sitemaps of the sites we are looking in
  * 
  * Checks the sitemaps of a particular site, and then run checkPage() on each link
  */
-function checkSitemaps( $refererSite, $siteID, $domain ){
-
-    $refererSitemaps = get_field( 'sitemaps', $refererSite['id'] );
+function checkSitemaps( $refererSite, $siteID, $domain, $refererSitemaps ){
     
     if( !$refererSitemaps )
     return false;
@@ -182,7 +182,7 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
 
     $results = false;
 
-    foreach( $refererSitemaps as $sitemap ){
+    foreach( $refererSitemaps as $key => $sitemap ){
 
         // Check if $last_checked is empty. Meaning that we didn't crawl the domain yet
         // If we already crawled the domain, and last_checked is not empty
@@ -218,12 +218,21 @@ function checkSitemaps( $refererSite, $siteID, $domain ){
                 // At this point, we will not return a result, and match_sites_chunk will stop, and 
                 // we will move onto the next step, which is splitting the sitemap links
                 // and then processing them into sets of 100, then returning the result there to continue.
-                wp_send_json_success( [ 'code' => 'CRAWL_HEARTBEAT', 'sitemap_links' => $xml, 'sitemap' => $sitemap, 'domain' => $domain, 'refererSite' => $refererSite ] );
+                wp_send_json_success( [ 
+                    'code'              => 'CRAWL_HEARTBEAT', 
+                    'sitemap_links'     => $xml, 
+                    'sitemap'           => $sitemap, 
+                    'domain'            => $domain, 
+                    'referer_site'      => $refererSite,
+                    'referer_sitemaps'  => $refererSitemaps
+                ] );
 
             }else{
 
                 if( $results = crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ) )
                 return $results;
+
+                unset($refererSitemaps[$key]);
 
                 continue;
 
@@ -310,13 +319,13 @@ function checkPage( $siteToCheck, $domain ){
     return false;
 
     $anchorData = [
-        'referer_id' => $siteToCheck['id'],
-        'link_from' => $siteToCheck['domain'],
-        'source' => isset($siteToCheck['source']) ? $siteToCheck['source'] : null,
-        'source_modified' => isset($siteToCheck['source_modified']) ? $siteToCheck['source_modified'] : null,
-        'link_to' => implode(', ', $crawler->extract(['href'])),
-        'rel' => $crawler->extract(['rel']) ? implode(', ', $crawler->extract(['rel'])) : 'follow',
-        'content' => $crawler->extract(['_text']) ? implode(', ', $crawler->extract(['_text'])) : ''
+        'referer_id'        => $siteToCheck['id'],
+        'link_from'         => $siteToCheck['domain'],
+        'source'            => isset($siteToCheck['source']) ? $siteToCheck['source'] : null,
+        'source_modified'   => isset($siteToCheck['source_modified']) ? $siteToCheck['source_modified'] : null,
+        'link_to'           => implode(', ', $crawler->extract(['href'])),
+        'rel'               => $crawler->extract(['rel']) ? implode(', ', $crawler->extract(['rel'])) : 'follow',
+        'content'           => $crawler->extract(['_text']) ? implode(', ', $crawler->extract(['_text'])) : ''
     ];
 
     return $anchorData;

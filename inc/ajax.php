@@ -159,7 +159,7 @@ add_action( 'wp_ajax_match_sites_chunk', 'match_sites_chunk' );
 
 /**
  * This function will attempt to crawl sitemaps in different calls
- * if a sitemap has more than 100 links.
+ * if a sitemap has more than 50 links.
  * 
  * #Step 3.1
  * 
@@ -178,6 +178,30 @@ function crawl_sitemap_sets(){
     wp_send_json_error( ['message' => 'Could not find a link in the current set, moving on'] );
 }
 add_action( 'wp_ajax_crawl_sitemap_sets', 'crawl_sitemap_sets' );
+
+/**
+ * After a CRAWL_HEARTBEAT is called, and one sitemap was complete,
+ * let's now jump to the other sitemap
+ * 
+ * #Step 3.2
+ * 
+ * @since 1.0.0
+ */
+function jump_to_next_sitemap(){
+
+    $chunkBreakdown = null;
+
+    $referer_site       = $_POST['referer_site'];
+    $site_id            = $_POST['site_id'];
+    $domain             = $_POST['domain'];
+    $referer_sitemaps   = $_POST['referer_sitemaps'];
+
+    // If we found a result from checkSitemaps(), lets mark as CHUNK_COMPLETE
+    if( $chunkBreakdown[$referer_site['id']] = checkSitemaps( $referer_site, $site_id, $domain, $referer_sitemaps ) )
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
+
+}
+add_action( 'wp_ajax_jump_to_next_sitemap', 'jump_to_next_sitemap' );
 
 /**
  * Saves the site data in the DB after crawl
