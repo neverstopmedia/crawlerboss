@@ -44,5 +44,7 @@ $backlink_data = get_field( 'backlink_data', $args );
         <?php
     }
 
+}else{
+    echo '<p class="text-center mb-0">Site hasn\'t been crawled or has no data</p>';
 }
 ?>

@@ -118,6 +118,8 @@ function getBacklinkDistributionByNetwork( $backlinks ){
 /**
  * Cleans up the backlink data to make them representable
  * 
+ * @var array $data - The backlink data
+ * 
  * @since 1.0.0
  */
 function cleanBacklinkData( $data ){
@@ -175,6 +177,54 @@ function cleanBacklinkData( $data ){
     }
 
     return $data;
+
+}
+
+/**
+ * Cleans up the backlink data to make them representable
+ * 
+ * @var array $data - The backlink data
+ * 
+ * @since 1.0.0
+ */
+function getKeywordDistribution( $data ){
+    
+    $distribution = [];
+    $frequencies = [];
+
+    $count = 0;
+
+    foreach( $data as $key => $item ){
+
+        $data[$key]['content'] = explode( ', ', $item['content'] );
+
+        foreach( $data[$key]['content'] as $_key => $content ){
+
+            if( empty($content) )
+            $content = 'Image';
+
+            $distribution[] = $content;
+
+            $count++;
+
+        }
+
+    }
+    
+    if( is_array($distribution) ){
+
+        $frequencies['count'] = $count;
+        
+        foreach ($distribution as $keyword) {
+            if (!isset($frequencies[$keyword])) {
+                $frequencies[$keyword] = 0;
+            }
+        
+            $frequencies[$keyword]++;
+        }
+    }
+    
+    return $frequencies;
 
 }
 
