@@ -123,17 +123,28 @@ function cleanBacklinkData( $data ){
 
     foreach( $data as $key => $item ){
 
-        unset( $data[$key]['referer_id'] );
-
         $data[$key]['link_from']    = explode( ', ', $item['link_from'] );
         $data[$key]['link_to']      = explode( ', ', $item['link_to'] );
         $data[$key]['rel']          = explode( ', ', $item['rel'] );
         $data[$key]['content']      = explode( ', ', $item['content'] );
-        
+
         foreach( $data[$key]['rel'] as $_key => $rel ){
 
             if( empty($rel) )
             $data[$key]['rel'][$_key] = 'follow';
+
+            if( !empty($rel) && !str_contains( $rel, 'nofollow' ) )
+            $data[$key]['rel'][$_key] = 'follow';
+
+            if( !empty($rel) && str_contains( $rel, 'nofollow' ) )
+            $data[$key]['rel'][$_key] = 'nofollow';
+
+        }
+
+        foreach( $data[$key]['content'] as $_key => $content ){
+
+            if( empty($content) )
+            $data[$key]['content'][$_key] = 'Image';
 
         }
         

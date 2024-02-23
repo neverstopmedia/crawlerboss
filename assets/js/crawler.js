@@ -157,7 +157,10 @@
                     refererSitemaps
                 );
             }else{
-
+                
+                if( Array.isArray(refererSitemaps) == false )
+                refererSitemaps = Object.keys(refererSitemaps).map((key) => refererSitemaps[key] );
+                
                 // Let's remove the first element from the array of sitemaps so we can process the next
                 refererSitemaps.shift();
 
@@ -238,6 +241,9 @@
                     refererSitemaps
                 );
 
+            }else{
+                finalizeSiteCrawl( [false], siteToCrawl, start, sites, siteID, crawlCount );
+                return;
             }
 
         });

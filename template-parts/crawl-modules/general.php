@@ -9,7 +9,9 @@
             <span>
                 <?php
                 if( $network = getFirstTaxTerm( get_the_ID(), 'site_network' ) ){
-                    echo $network->name;
+                    ?>
+                    <img class="mw-20" src="<?php echo get_field('network_image', 'site_network_' . $network->term_id); ?>" alt="<?php echo $network->name; ?>">
+                    <?php
                 }else{
                     'No network set';
                 }

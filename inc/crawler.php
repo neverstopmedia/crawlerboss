@@ -234,8 +234,6 @@ function checkSitemaps( $refererSite, $siteID, $domain, $refererSitemaps ){
 
                 unset($refererSitemaps[$key]);
 
-                continue;
-
             }
       
         }
