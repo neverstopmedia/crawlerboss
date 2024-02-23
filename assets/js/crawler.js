@@ -158,13 +158,13 @@
                 );
             }else{
 
+                // Let's remove the first element from the array of sitemaps so we can process the next
+                refererSitemaps.shift();
+
                 if( !refererSitemaps.length ){
                     finalizeSiteCrawl( [ false ], siteToCrawl, start, sites, siteID, crawlCount );
                     return;
                 }
-
-                // Let's remove the first element from the array of sitemaps so we can process the next
-                refererSitemaps.shift();
 
                 jumpToNextSitemap(
                     refererSite,
