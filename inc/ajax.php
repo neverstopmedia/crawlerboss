@@ -233,3 +233,16 @@ function finalize_crawl(){
 
 }
 add_action( 'wp_ajax_finalize_crawl', 'finalize_crawl' );
+
+function get_content_ajax(){
+
+    $template_part = $_POST['template'];
+    $site_id = $_POST['site_id'];
+
+    ob_start();
+    get_template_part( $template_part, null, $site_id );
+
+    wp_send_json_success( [ 'markup' => ob_get_clean() ] );
+
+}
+add_action( 'wp_ajax_get_content_ajax', 'get_content_ajax' );

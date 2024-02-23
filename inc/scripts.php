@@ -28,6 +28,8 @@ function crawler_scripts() {
   
   wp_enqueue_script( 'main', CRAWLER_URI . '/assets/js/main.js', array('jquery'), CRAWLER_VERSION, ['in_footer' => true] );
   wp_enqueue_script( 'crawler', CRAWLER_URI . '/assets/js/crawler.js', array('jquery'), CRAWLER_VERSION, [ 'in_footer' => true ] );
+  wp_enqueue_script( 'site', CRAWLER_URI . '/assets/js/site.js', array('jquery'), CRAWLER_VERSION, [ 'in_footer' => true ] );
+
   wp_localize_script( 'main', 'crawler_ajax_obj', [
     'ajaxurl' => admin_url('admin-ajax.php'),
   ]);

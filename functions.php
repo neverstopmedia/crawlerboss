@@ -1,7 +1,7 @@
 <?php
 define( 'CRAWLER_DIR', get_template_directory() );
 define( 'CRAWLER_URI', get_template_directory_uri() );
-define( 'CRAWLER_VERSION', '1.0.9' );
+define( 'CRAWLER_VERSION', '1.1.0' );
 
 include 'vendor/autoload.php';
 

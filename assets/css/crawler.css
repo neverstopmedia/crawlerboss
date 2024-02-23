@@ -80,20 +80,38 @@
 }
 
 .badge{
-    padding: 4px 2px;
+    padding: 0 4px;
     border-radius: 3px;
     text-align: center;
     line-height: 1;
+    background-color: #dfdfdf;
+    color: #474747;
 }
-.badge.success{
-    background-color: #e7ffe7;
-    color: green;
-}
+
 .badge.danger{
     background-color: red;
+    color: #fff;
 }
 .link-group + .link-group{
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid var(--color-borders);
+}
+.link-item + .link-item{
+    margin-top: 5px;
+}
+
+.badge.status-200{
+    color: white;
+    background-color: #276f27;
+}
+.badge.status-404{
+    color: white;
+    background-color: #cb3535;
+}
+.badge.status-301,
+.badge.status-302,
+.badge-.status-307{
+    color: #fff;
+    background-color: #f39645;
 }

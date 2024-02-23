@@ -1,4 +1,5 @@
 <?php
+use Symfony\Component\HttpClient\HttpClient;
 
 /**
  * Extract the main domain + TLD
@@ -127,6 +128,29 @@ function cleanBacklinkData( $data ){
         $data[$key]['link_to']      = explode( ', ', $item['link_to'] );
         $data[$key]['rel']          = explode( ', ', $item['rel'] );
         $data[$key]['content']      = explode( ', ', $item['content'] );
+
+        foreach( $data[$key]['link_to'] as $_key => $link_to ){
+
+            $client = HttpClient::create();
+            $response = $client->request(
+                'GET',
+                $link_to,
+                [
+                    'max_redirects' => 0,
+                    'timeout'       => -1
+                ]
+            );
+
+            $statusCode = $response->getStatusCode();
+    
+            $data[$key]['status'][$_key] = $statusCode;
+            $data[$key]['redirect'][$_key] = null;
+
+            if( $statusCode == 301 || $statusCode == 302 ){
+                $data[$key]['redirect'][$_key] = $response->getInfo('redirect_url');
+            }
+
+        }
 
         foreach( $data[$key]['rel'] as $_key => $rel ){
 
