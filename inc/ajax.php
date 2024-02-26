@@ -138,24 +138,21 @@ add_action( 'wp_ajax_crawl_callback', 'crawl_callback' );
  * 
  * @since 1.0.0
  */
-function match_sites_chunk(){
+function crawl_site(){
     
     $siteID = isset($_POST['site_id']) ? $_POST['site_id'] : null;
-    $site   = isset($_POST['site']) ? $_POST['site'] : null;
+    $site_to_crawl   = isset($_POST['site_to_crawl']) ? $_POST['site_to_crawl'] : null;
 
     if( !$siteID )
     wp_send_json_error( [ 'message' => 'Invalid Site' ] );
 
-    if( !$site )
-    wp_send_json_error( [ 'message' => 'No site to check with' ] );
+    if( !$site_to_crawl )
+    wp_send_json_error( [ 'message' => 'No site to check in' ] );
 
-    if( !$chunk_state = checkSite( $site, $siteID ) )
-    wp_send_json_error( [ 'message' => 'Something went wrong, please contact developer' ] );
-    
-    wp_send_json_success( [ 'message' => 'Site processed', 'site' => $site ] );
+    checkSite( $site_to_crawl, $siteID );
 
 }
-add_action( 'wp_ajax_match_sites_chunk', 'match_sites_chunk' );
+add_action( 'wp_ajax_crawl_site', 'crawl_site' );
 
 /**
  * This function will attempt to crawl sitemaps in different calls
@@ -170,10 +167,10 @@ function crawl_sitemap_sets(){
     $links          = $_POST['links'];
     $sitemap        = $_POST['sitemap'];
     $domain         = $_POST['domain'];
-    $referer_site   = $_POST['referer_site'];
+    $siteToCrawl    = $_POST['site_to_crawl'];
 
-    if( $results = crawlIndividualSitemap( $links, $sitemap, $domain, $referer_site ) )
-    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $results ] );
+    if( $results = crawlIndividualSitemap( $links, $sitemap, $domain, $siteToCrawl ) )
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $results ] );
 
     wp_send_json_error( ['message' => 'Could not find a link in the current set, moving on'] );
 }
@@ -191,14 +188,14 @@ function jump_to_next_sitemap(){
 
     $chunkBreakdown = null;
 
-    $referer_site       = $_POST['referer_site'];
-    $site_id            = $_POST['site_id'];
-    $domain             = $_POST['domain'];
-    $referer_sitemaps   = $_POST['referer_sitemaps'];
+    $site_to_crawl              = $_POST['site_to_crawl'];
+    $site_id                    = $_POST['site_id'];
+    $domain                     = $_POST['domain'];
+    $site_to_crawl_sitemaps     = $_POST['site_to_crawl_sitemaps'];
 
     // If we found a result from checkSitemaps(), lets mark as CHUNK_COMPLETE
-    if( $chunkBreakdown[$referer_site['id']] = checkSitemaps( $referer_site, $site_id, $domain, $referer_sitemaps ) )
-    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
+    $chunkBreakdown[$site_to_crawl['id']] = checkSitemaps( $site_to_crawl, $site_id, $domain, $site_to_crawl_sitemaps );
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $chunkBreakdown ] );
 
 }
 add_action( 'wp_ajax_jump_to_next_sitemap', 'jump_to_next_sitemap' );

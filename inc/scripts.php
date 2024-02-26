@@ -25,6 +25,7 @@ function crawler_scripts() {
   
   wp_enqueue_script( 'select2', CRAWLER_URI . '/assets/js/lib/select2.min.js', array('jquery'), '4.1.4', false );
   wp_enqueue_script( 'tooltipster', CRAWLER_URI . '/assets/js/lib/tooltipster.bundle.js', array('jquery'), '1.0.0', false );
+  wp_enqueue_script( 'cytoscape', CRAWLER_URI . '/assets/js/lib/cytoscape.min.js', array('jquery'), '1.0.0', false );
   
   wp_enqueue_script( 'main', CRAWLER_URI . '/assets/js/main.js', array('jquery'), CRAWLER_VERSION, ['in_footer' => true] );
   wp_enqueue_script( 'crawler', CRAWLER_URI . '/assets/js/crawler.js', array('jquery'), CRAWLER_VERSION, [ 'in_footer' => true ] );

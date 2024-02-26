@@ -9,3 +9,16 @@
 <body <?php body_class(); ?>>
 
 	<?php wp_body_open(); ?>
+
+    <?php 
+
+    if( !is_user_logged_in() ){
+        ?>
+        <div class="text-center container py-40">
+            <h1>Login coming</h1>
+            <img src="https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif" alt="">
+        </div>
+        <?php
+        die();
+    }
+    ?>

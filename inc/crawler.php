@@ -110,79 +110,83 @@ function setInnerSitemaps( $sitemapURL, $siteID ){
 }
 
 /**
- * @var $chunk - A chunk of sites to check against
- * @var $siteID - The site we are checking
+ * @var Array - $siteToCrawl - The site we want to check in
+ *      $siteToCrawl['domain'] Example: https://example.com
+ *      $siteToCrawl['id']
+ * 
+ * @var Int - $siteID - The site ID that we want to check for
  * 
  * Crawls a site
  * 
  * @since 1.0.0
  */
-function checkSite( $chunk, $siteID ){
+function checkSite( $siteToCrawl, $siteID ){
 
-    if( !$chunk || !is_array($chunk) || empty($siteID) )
-    return false;
+    if( !$siteToCrawl || !is_array($siteToCrawl) || empty($siteID) )
+    wp_send_json_error( [ 'message' => 'Missing information' ] );
 
-    $chunkBreakdown = null;
+    $siteBreakdown = null;
 
-    /**
-     * Let's extract the domain and tld from the URL so we can start checking it.
-     */
+    // Let's extract the domain and tld from the URL of the site want want to check for so we can start checking it.
     if( $domain = extractDomain(get_field( 'domain', $siteID )) ){
 
-        foreach( $chunk as $siteToCheck ){
+        // First, lets check the site, and see if we have any index links before proceeding to anything else
+        // If we checked, and the domain exists, we will skip the sitemaps, otherwise we will start
+        // checking the sitemaps of $siteToCrawl['id'] for $domain
+        if( $siteBreakdown[$siteToCrawl['id']] = checkPage( $siteToCrawl, $domain ) ){
+            
+            wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
-            // First, lets check the site, and see if we have any index links before proceeding to anything else
-            $chunkBreakdown[$siteToCheck['id']] = checkPage( $siteToCheck, $domain );
+        }else{
 
-            // If we checked, and the domain exists, we will skip the sitemaps, otherwise we will start
-            // checking the sitemaps of $siteToCheck['id'] for $domain
-            if( isset($chunkBreakdown[$siteToCheck['id']]['link_from']) && $chunkBreakdown[$siteToCheck['id']]['link_from'] ){
-                continue;
-            }else{
-
-                // If the option is enabled, lets skip the sitemap check. E.G. Sites with big 
-                if( get_field( 'skip_sitemap', $siteToCheck['id'] ) )
-                continue;
-                
-                // Let's start checking the sitemaps.
-                $refererSitemaps = get_field( 'sitemaps', $siteToCheck['id'] );
-                $chunkBreakdown[$siteToCheck['id']] = checkSitemaps( $siteToCheck, $siteID, $domain, $refererSitemaps );
-
+            // If the option is enabled, lets skip the sitemap check. E.G. Sites with big sitemaps
+            if( get_field( 'skip_sitemap', $siteToCrawl['id'] ) ){
+                $siteBreakdown[$siteToCrawl['id']] = false;
+                wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
             }
+
+            // Let's start checking the sitemaps.
+            $siteToCrawlSitemaps = get_field( 'sitemaps', $siteToCrawl['id'] );
+
+            $siteBreakdown[$siteToCrawl['id']] = checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps );
+            wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
         }
 
     }
     
-    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'chunk' => $chunkBreakdown ] );
+    $siteBreakdown[$siteToCrawl['id']] = false;
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
 }
 
 /**
- * @var $refererSite - The site in which we are looking in
- *      $refererSite['domain']
- *      $refererSite['id']
+ * @var $siteToCrawl - The site we are looking in
+ *      $siteToCrawl['domain']
+ *      $siteToCrawl['id']
  * 
- * @var $siteID - The domain ID we are trying to find on other sites.
- * @var $domain - The domain name we are trying to find on the other sites
- * @var $refererSitemaps - The sitemaps of the sites we are looking in
+ * @var $siteID - The Id of the site we are looking for.
+ * @var $domain - The domain of the site we are looking for. Example: example.com
+ * @var $siteToCrawlSitemaps - The sitemaps of the site we are looking in
  * 
  * Checks the sitemaps of a particular site, and then run checkPage() on each link
+ * 
+ * @since 1.0.0
  */
-function checkSitemaps( $refererSite, $siteID, $domain, $refererSitemaps ){
+function checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps ){
     
-    if( !$refererSitemaps )
+    if( !$siteToCrawlSitemaps )
     return false;
 
     // Check when was the domain crawled last
     $last_checked = get_field( 'last_checked', $siteID );
 
     // Let's sort the sitemap to have post-sitemaps at the end
-    usort($refererSitemaps, 'sitemapSort');
+    usort($siteToCrawlSitemaps, 'sitemapSort');
 
     $results = false;
 
-    foreach( $refererSitemaps as $key => $sitemap ){
+    foreach( $siteToCrawlSitemaps as $key => $sitemap ){
 
         // Check if $last_checked is empty. Meaning that we didn't crawl the domain yet
         // If we already crawled the domain, and last_checked is not empty
@@ -209,30 +213,30 @@ function checkSitemaps( $refererSite, $siteID, $domain, $refererSitemaps ){
                 return false;
             }
 
-            $xml = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
+            $sitemap_links = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
 
-            // If we have more than 100 pages in a sitemap, lets split the tasks
+            // If we have more than 50 pages in a sitemap, lets split the tasks
             // into different calls so we dont get a 5xx response code
-            if( count($xml) > 50 ){
+            if( count($sitemap_links) > 50 ){
 
                 // At this point, we will not return a result, and match_sites_chunk will stop, and 
                 // we will move onto the next step, which is splitting the sitemap links
-                // and then processing them into sets of 100, then returning the result there to continue.
+                // and then processing them into sets of 50, then returning the result there to continue.
                 wp_send_json_success( [ 
-                    'code'              => 'CRAWL_HEARTBEAT', 
-                    'sitemap_links'     => $xml, 
-                    'sitemap'           => $sitemap, 
-                    'domain'            => $domain, 
-                    'referer_site'      => $refererSite,
-                    'referer_sitemaps'  => $refererSitemaps
+                    'code'                      => 'CRAWL_HEARTBEAT', 
+                    'sitemap_links'             => $sitemap_links, 
+                    'sitemap'                   => $sitemap, 
+                    'domain'                    => $domain, 
+                    'site_to_crawl_sitemaps'    => $siteToCrawlSitemaps
                 ] );
 
             }else{
 
-                if( $results = crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ) )
+                if( $results = crawlIndividualSitemap( $sitemap_links, $sitemap, $domain, $siteToCrawl ) )
                 return $results;
 
-                unset($refererSitemaps[$key]);
+                // If we didnt find anything in the sitemap, lets remove it from the array
+                unset($siteToCrawlSitemaps[$key]);
 
             }
       
@@ -249,17 +253,17 @@ function checkSitemaps( $refererSite, $siteID, $domain, $refererSitemaps ){
  * 
  * @since 1.0.0
  */
-function crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ){
+function crawlIndividualSitemap( $sitemap_links, $sitemap, $domain, $siteToCrawl ){
 
     $found = false;
 
-    foreach( $xml as $item ){
+    foreach( $sitemap_links as $sitemap_link ){
 
         $siteToCheck = [
-            'id' => $refererSite['id'], 
-            'domain' => is_array($item) ? $item['loc'] : (string)$item->loc,
-            'source' => $sitemap['sitemap'],
-            'source_modified' => $sitemap['last_modified']
+            'id'                => $siteToCrawl['id'], 
+            'domain'            => is_array($sitemap_link) ? $sitemap_link['loc'] : (string)$sitemap_link->loc,
+            'source'            => $sitemap['sitemap'],
+            'source_modified'   => $sitemap['last_modified']
         ];
 
         // As soon as we find one link on a page, lets break from the loop
@@ -276,20 +280,34 @@ function crawlIndividualSitemap( $xml, $sitemap, $domain, $refererSite ){
 }
 
 /**
- * A function that will a page from a site, to see if the $domain exists in it
+ * A function that will check a page from $siteToCrawl['domain'], to see if the $domain exists in it
  * 
- * @var $siteToCheck - The site we want to check in
+ * @var $siteToCrawl - The site we want to check in
+ *      $siteToCrawl['domain'] Example: https://example.com
+ *      $siteToCrawl['id']
+ * 
  * @var $domain - The domain we want to check for
+ * 
+ * @return Array|Boolean Returns an array if all went well, otherwise returns false
+ * array(
+ *       'referer_id'        => int,
+ *       'link_from'         => string,
+ *       'source'            => string,
+ *       'source_modified'   => date,
+ *       'link_to'           => string,
+ *       'rel'               => string,
+ *       'content'           => string
+ * );
  * 
  * @since 1.0.0
  */
-function checkPage( $siteToCheck, $domain ){
+function checkPage( $siteToCrawl, $domain ){
 
     try{
         $client = HttpClient::create();
         $response = $client->request(
             'GET',
-            $siteToCheck['domain'],
+            $siteToCrawl['domain'],
             [
                 'max_redirects' => 0,
                 'timeout'       => -1
@@ -316,11 +334,12 @@ function checkPage( $siteToCheck, $domain ){
     if( !$crawler->count() )
     return false;
 
+    // source & source_modified only exist if we are checking a sitemap link
     $anchorData = [
-        'referer_id'        => $siteToCheck['id'],
-        'link_from'         => $siteToCheck['domain'],
-        'source'            => isset($siteToCheck['source']) ? $siteToCheck['source'] : null,
-        'source_modified'   => isset($siteToCheck['source_modified']) ? $siteToCheck['source_modified'] : null,
+        'referer_id'        => $siteToCrawl['id'],
+        'link_from'         => $siteToCrawl['domain'],
+        'source'            => isset($siteToCrawl['source']) ? $siteToCrawl['source'] : null,
+        'source_modified'   => isset($siteToCrawl['source_modified']) ? $siteToCrawl['source_modified'] : null,
         'link_to'           => implode(', ', $crawler->extract(['href'])),
         'rel'               => $crawler->extract(['rel']) ? implode(', ', $crawler->extract(['rel'])) : 'follow',
         'content'           => $crawler->extract(['_text']) ? implode(', ', $crawler->extract(['_text'])) : ''

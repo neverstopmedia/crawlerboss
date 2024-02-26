@@ -4,6 +4,9 @@
 
     // This will hold all the sites that have a link to domain.
     let processedSites = [];
+    let crawlCount = 1;
+    let sites = [];
+    let siteID = null;
 
     /**
      * Get the html markup for the process list
@@ -20,26 +23,27 @@
     /**
      * Finalizes the process of a single site within the crawl
      * 
-     * @param {Boolean|Array} chunk The response, false or array
+     * @param {Boolean|Array} siteBreakdown The response, false or array
      * @param {Array} siteToCrawl - The site we are crawling
      * @param {Date} start - Start time
      * @param {Array} sites - The list of remaining sites to crawl
-     * @param {Int} siteID - Site ID that we are crawling
-     * @param {Int} crawlCount - The current crawl count
      */
-    function finalizeSiteCrawl( chunk, siteToCrawl, start, sites, siteID, crawlCount ){
+    function finalizeSiteCrawl( siteBreakdown, siteToCrawl, start ){
+
+        let arrayResponse = null;
 
         // Let's convert the object of objects into an array, and filter out the false responses.
-        let arrayResponse = Object.keys(chunk).map((key) => chunk[key]).filter(Boolean);
+        if( Array.isArray(siteBreakdown) == false && siteBreakdown != false )
+        arrayResponse = Object.keys(siteBreakdown).map((key) => siteBreakdown[key]).filter(Boolean);
 
-        if( arrayResponse.length )
+        if( arrayResponse && arrayResponse.length )
         processedSites.push( arrayResponse );
-        
-        $('#site-'+crawlCount).addClass('complete').text( `${siteToCrawl[0].domain} completed in ${Date.now() - start} ms` )
+
+        $('#site-'+crawlCount).addClass('complete').text( `${siteToCrawl.domain} completed in ${Date.now() - start} ms` )
         crawlCount++;
 
         if( sites.length ){
-            processSitesChunk(sites, siteID, crawlCount);
+            processSite();
         }else{
 
             $(".loader").text('Complete').removeClass('loader');
@@ -108,16 +112,12 @@
      *
      * @param {Array} sitemapLinks - The list of links we are crawling
      * @param {Array} sitemap - The sitemap we are crawling [lastmod, sitemap]
-     * @param {String} domain - The domain we are trying to look for
-     * @param {Array} siteToCrawl - The site we are crawling
-     * @param {Array} refererSite - The site we are searching in
+     * @param {String}domain - The domain we are trying to look for
+     * @param {Array} siteToCrawlSitemaps - The sitemaps of the referer site
+     * @param {Array} siteToCrawl - The site we are crawling [id, domain]
      * @param {Date} start - Start time for the crawl
-     * @param {Array} sites - List of all sites
-     * @param {Int} siteID - The ID of the site we are trying to look for
-     * @param {Int} crawlCount - The current count in the crawl
-     * @param {Array} refererSitemaps - The sitemaps of the referer site
      */
-    function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawl, refererSite, start, sites, siteID, crawlCount, refererSitemaps){
+    function processSitemapLinks(sitemapLinks, sitemap, domain, siteToCrawlSitemaps, siteToCrawl, start){
 
         let sitemapRequest;
 
@@ -133,51 +133,44 @@
                 links: sitemapLinks.splice(0, 50),
                 sitemap: sitemap,
                 domain: domain,
-                referer_site: refererSite
+                site_to_crawl: siteToCrawl
             }
         });
 
         sitemapRequest.done(function (response){
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
-                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
+                console.log('Finalizing site crawl from ProcessSitemapLinks');
+                return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
             }
 
             if( sitemapLinks.length ){
-                processSitemapLinks( 
+                return processSitemapLinks( 
                     sitemapLinks, 
                     sitemap, 
                     domain, 
+                    siteToCrawlSitemaps,
                     siteToCrawl, 
-                    refererSite, 
-                    start, 
-                    sites, 
-                    siteID, 
-                    crawlCount,
-                    refererSitemaps
+                    start
                 );
             }else{
                 
-                if( Array.isArray(refererSitemaps) == false )
-                refererSitemaps = Object.keys(refererSitemaps).map((key) => refererSitemaps[key] );
+                if( Array.isArray(siteToCrawlSitemaps) == false )
+                siteToCrawlSitemaps = Object.keys(siteToCrawlSitemaps).map((key) => siteToCrawlSitemaps[key] );
                 
                 // Let's remove the first element from the array of sitemaps so we can process the next
-                refererSitemaps.shift();
+                siteToCrawlSitemaps.shift();
 
-                if( !refererSitemaps.length ){
-                    finalizeSiteCrawl( [ false ], siteToCrawl, start, sites, siteID, crawlCount );
-                    return;
+                if( !siteToCrawlSitemaps.length ){
+                    console.log('Finalizing site crawl from ProcessSitemapLinks, after no sitemaps left');
+                    return finalizeSiteCrawl( false, siteToCrawl, start );
                 }
 
-                jumpToNextSitemap(
-                    refererSite,
-                    siteID,
+                return jumpToNextSitemap(
                     domain,
-                    refererSitemaps,
+                    siteToCrawlSitemaps,
                     siteToCrawl,
-                    start,
-                    sites,
-                    crawlCount
+                    start
                 );
 
             }
@@ -189,18 +182,14 @@
     /**
      * After crawling one sitemap in a CRAWL_HEARTBEAT let's jump to the next sitemap
      * 
-     * @param {Array} refererSite - The site we are searching in
-     * @param {Int} siteID - The ID of the site we are trying to look for
      * @param {String} domain - The domain we are trying to look for
-     * @param {Array} refererSitemaps - The sitemaps of the referer site
+     * @param {Array} siteToCrawlSitemaps - The sitemaps of the referer site
      * @param {Array} siteToCrawl - The site we are crawling
      * @param {Date} start - Start time for the crawl
-     * @param {Array} sites - List of all sites
-     * @param {Int} crawlCount - The current count in the crawl
      * 
      * #Step 3.2
      */
-    function jumpToNextSitemap(refererSite, siteID, domain, refererSitemaps, siteToCrawl, start, sites,  crawlCount){
+    function jumpToNextSitemap(domain, siteToCrawlSitemaps, siteToCrawl, start){
 
         let request;
 
@@ -213,10 +202,10 @@
             type: "post",
             data: {
                 action: 'jump_to_next_sitemap',
-                referer_site: refererSite,
+                site_to_crawl: siteToCrawl,
                 site_id: siteID,
                 domain: domain,
-                referer_sitemaps: refererSitemaps
+                site_to_crawl_sitemaps: siteToCrawlSitemaps
             }
         });
 
@@ -224,26 +213,24 @@
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
-                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
-                
+                console.log('Finalizing site crawl from jumpToNextSitemap');
+
+                return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
+
             }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
 
-                processSitemapLinks( 
+                return processSitemapLinks( 
                     response.data.sitemap_links.url, 
                     response.data.sitemap, 
                     response.data.domain, 
+                    siteToCrawlSitemaps,
                     siteToCrawl, 
-                    response.data.referer_site, 
-                    start, 
-                    sites, 
-                    siteID, 
-                    crawlCount,
-                    refererSitemaps
+                    start
                 );
 
             }else{
-                finalizeSiteCrawl( [false], siteToCrawl, start, sites, siteID, crawlCount );
-                return;
+                console.log('Finalizing site crawl from jumpToNextSitemap, after the last condition');
+                return finalizeSiteCrawl( false, siteToCrawl, start );
             }
 
         });
@@ -251,12 +238,11 @@
     }
 
     /**
-     * Accept a chunk of sites as an array, and crawl them
+     * Start the site processing step
      * 
      * #Step 2
-     * @param {Array} chunk 
      */
-    function processSitesChunk( sites, siteID, crawlCount ){
+    function processSite(){
 
         let request;
 
@@ -265,8 +251,9 @@
 
         // Change this to change the number of sites crawled in a single call
         let siteToCrawl = sites.splice(0, 1);
+        siteToCrawl = siteToCrawl[0];
 
-        $(".working").append(`<div id="site-${crawlCount}" class="description">${crawlCount}. Processing ${siteToCrawl[0].domain}</div>`);
+        $(".working").append(`<div id="site-${crawlCount}" class="description">${crawlCount}. Processing ${siteToCrawl.domain}</div>`);
 
         // Abort any pending request
         if (request) {
@@ -277,46 +264,34 @@
             url: crawler_ajax_obj.ajaxurl,
             type: "post",
             data: {
-                action: 'match_sites_chunk',
-                site: siteToCrawl,
+                action: 'crawl_site',
+                site_to_crawl: siteToCrawl,
                 site_id: siteID
             }
         });
 
-        // Callback handler that will be called on success
         request.done(function (response){
-
-            console.log(response);
-
+            
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
-                finalizeSiteCrawl( response.data.chunk, siteToCrawl, start, sites, siteID, crawlCount );
+                console.log('Finalizing site crawl from processSite');
+                return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
                 
             }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
 
-                processSitemapLinks( 
+                return processSitemapLinks( 
                     response.data.sitemap_links.url, 
                     response.data.sitemap, 
                     response.data.domain, 
+                    response.data.site_to_crawl_sitemaps,
                     siteToCrawl, 
-                    response.data.referer_site, 
-                    start, 
-                    sites, 
-                    siteID, 
-                    crawlCount,
-                    response.data.referer_sitemaps
+                    start
                 );
 
             }
             
         });
     
-        // Callback handler that will be called regardless
-        // if the request failed or succeeded
-        request.always(function () {
-            crawlCount++;
-        });
-
     }
 
     /**
@@ -329,7 +304,7 @@
         e.preventDefault();
         e.stopPropagation();
 
-        let siteID = $("#siteID").val();
+        siteID = $("#siteID").val();
         
         // If a site was not specific, let's just exit
         if( !siteID ){
@@ -370,17 +345,16 @@
                 if(response.data.cache == true){
 
                     $(".crawl--results").html(response.data.markup);
-
                     return true;
                 }
 
-                let sites = response.data;
+                sites = response.data;
                 
                 $(".working").append(`<div class="description">${sites.length} sites are ready to crawl</div>`);
                 $(".loader").text('Complete').removeClass('loader');
                 $(".working").removeClass('working').addClass('complete').next().addClass('working').removeClass('pending').find('small').html('').addClass('loader');
                 
-                processSitesChunk(sites, siteID, 1);
+                processSite();
                 
                 return true;
             }
