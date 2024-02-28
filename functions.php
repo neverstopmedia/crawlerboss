@@ -1,7 +1,7 @@
 <?php
 define( 'CRAWLER_DIR', get_template_directory() );
 define( 'CRAWLER_URI', get_template_directory_uri() );
-define( 'CRAWLER_VERSION', '1.1.3' );
+define( 'CRAWLER_VERSION', '1.1.4' );
 
 include 'vendor/autoload.php';
 
@@ -17,6 +17,7 @@ include 'inc/helper.php';
 include 'inc/ajax.php';
 include 'inc/crawler.php';
 include 'inc/crawler-actions.php';
+include 'inc/cron.php';
 
 require CRAWLER_DIR . '/plugin-update-checker/plugin-update-checker.php';
 $update_checker = Puc_v4_Factory::buildUpdateChecker(

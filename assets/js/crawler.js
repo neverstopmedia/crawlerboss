@@ -2,6 +2,14 @@
 (function ($) {
     'use strict';
 
+    // Show an alert before closing/reloading
+    window.onbeforeunload = function() {
+
+        if( $("body").hasClass('crawling') )
+        return "Data will be lost if you leave the page, are you sure?";
+
+    };
+
     // This will hold all the sites that have a link to domain.
     let processedSites = [];
     let crawlCount = 1;
@@ -96,7 +104,8 @@
                 $(".working").removeClass('working').addClass('complete');
 
                 alert('Processing complete');
-                // generateFinalResults( siteData );
+
+                $("body").removeClass('crawling');
 
             }else{
                 $(".loader").text('Error').removeClass('loader');
@@ -329,6 +338,7 @@
         }
         
         $("#custom-domain-search-btn").prop('disabled', true);
+        $("body").addClass('crawling');
 
         request = $.ajax({
             url: crawler_ajax_obj.ajaxurl,
@@ -374,6 +384,84 @@
         // if the request failed or succeeded
         request.always(function () {
             $("#custom-domain-search-btn").prop('disabled', false);
+        });
+
+    });
+
+    $("#single-domain-crawl").on('click', function(e){
+
+        e.preventDefault();
+
+        siteID = $(this).data('id');
+        
+        // If a site was not specific, let's just exit
+        if( !siteID ){
+            alert('Specify a site first');
+            return false;
+        }
+
+        // AJAX function to run a crawl
+        $(".crawl--results").html('<ul class="pl-0"></ul>');
+
+        $(".crawl--results ul").prepend( getStepsMarkup() );
+
+        let request;
+
+        // Abort any pending request
+        if (request) {
+            request.abort();
+        }
+        
+        $("#single-domain-crawl").prop('disabled', true);
+        $("body").addClass('crawling');
+
+        request = $.ajax({
+            url: crawler_ajax_obj.ajaxurl,
+            type: "post",
+            data: {
+                action: 'crawl_callback',
+                site_id: siteID,
+                force: true
+            }
+        });
+
+        // Callback handler that will be called on success
+        request.done(function (response){
+
+            $("#single-domain-crawl").prop('disabled', false);
+
+            if( response.success == true ){
+
+                if(response.data.cache == true){
+
+                    $("body").removeClass('crawling');
+
+                    $(".crawl--results").html(response.data.markup);
+                    return true;
+                }
+
+                sites = response.data;
+                
+                $(".working").append(`<div class="description">${sites.length} sites are ready to crawl</div>`);
+                $(".loader").text('Complete').removeClass('loader');
+                $(".working").removeClass('working').addClass('complete').next().addClass('working').removeClass('pending').find('small').html('').addClass('loader');
+                
+                processSite();
+                
+                return true;
+            }
+
+            // If response was an error
+            $(".working").removeClass('working').addClass('error');
+            $(".loader").text('Error').removeClass('loader');
+            return false;
+
+        });
+    
+        // Callback handler that will be called regardless
+        // if the request failed or succeeded
+        request.always(function () {
+            $("#single-domain-crawl").prop('disabled', false);
         });
 
     });

@@ -258,7 +258,9 @@ function getOpportunities( $data, $siteID ){
         while ( $query->have_posts() ) {
             $query->the_post();
 
-            $sites[] = [
+            $network = getFirstTaxTerm( get_the_ID(), 'site_network' );
+
+            $sites[$network->term_id][] = [
                 'id'        => get_the_ID(),
                 'site'      => get_the_title(),
                 'domain'    => get_field('domain')

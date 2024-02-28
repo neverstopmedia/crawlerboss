@@ -22,7 +22,14 @@ $last_checked = get_field( 'last_checked' );
             <h1 class="mb-5"><?php the_title(); ?></h1>
             <span> <b>Last Crawled: </b> <?php echo $last_checked ? time_elapsed_string($last_checked) : 'Not Crawled yet' ?></span>
         </div>
-        <a href="<?php echo get_home_url('/') ?>" class="btn btn-primary">Back home</a>
+        <div class="d-flex">
+            <a href="<?php echo get_home_url('/') ?>" class="btn btn-outline">Back home</a>
+            <button type="button" data-id="<?php echo get_the_ID(); ?>" class="ml-20 btn btn-primary" id="single-domain-crawl">Force Crawl</button>
+        </div>
+    </div>
+
+    <div class="crawl--results">
+            
     </div>
 
     <div class="row">

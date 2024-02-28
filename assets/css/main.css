@@ -3317,6 +3317,10 @@ nav.woocommerce-pagination ul {
     padding-left: 40px;
 }
 
+.list-2{
+    columns: 2;
+}
+
 @media (min-width: 768px) {
     .sm-12 {
         width: 100%;

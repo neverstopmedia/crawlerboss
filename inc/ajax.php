@@ -90,9 +90,10 @@ add_action( 'wp_ajax_get_sites', 'get_sites_callback' );
 function crawl_callback(){
 
     $last_checked = get_field( 'last_checked', $_POST['site_id'] );
+    $force_crawl = isset($_POST['force']) ? $_POST['force'] : false;
 
     // @TODO: Check if the site has been crawled the last 7 days
-    if( !empty($last_checked) && ( strtotime( $last_checked ) > strtotime('-7 day') ) ){
+    if( !empty($last_checked) && ( strtotime( $last_checked ) > strtotime('-7 day') ) && !$force_crawl ){
 
         ob_start();
         get_template_part( 'template-parts/site-results', null, $_POST['site_id'] );
