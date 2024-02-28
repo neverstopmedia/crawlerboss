@@ -37,7 +37,9 @@
         arrayResponse = Object.keys(siteBreakdown).map((key) => siteBreakdown[key]).filter(Boolean);
 
         if( arrayResponse && arrayResponse.length )
-        processedSites.push( arrayResponse );
+        processedSites.push( siteBreakdown );
+
+        console.log(processedSites);
 
         $('#site-'+crawlCount).addClass('complete').text( `${siteToCrawl.domain} completed in ${Date.now() - start} ms` )
         crawlCount++;
@@ -99,6 +101,8 @@
             }else{
                 $(".loader").text('Error').removeClass('loader');
                 $(".working").removeClass('working').addClass('error');
+
+                alert('Error occured, could not save');
             }
 
         });

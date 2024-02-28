@@ -222,9 +222,53 @@ function getKeywordDistribution( $data ){
         
             $frequencies[$keyword]++;
         }
+
+        asort($frequencies);
+        $frequencies = array_reverse($frequencies);
+
     }
     
     return $frequencies;
+
+}
+
+/**
+ * Returns a list of opportunities that can be added
+ * 
+ * @var array $data - The backlink data
+ * @var int $siteID - The site ID in which we want to add to the post_not_in
+ * 
+ * @since 1.0.0
+ */
+function getOpportunities( $data, $siteID ){
+
+    $existing_sites = array_column( $data , 'referer_id' );
+    array_push( $existing_sites, $siteID );
+    
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+        'post__not_in'      => $existing_sites
+    );
+
+    $query = new WP_Query( $args );
+    $sites = array();
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            $sites[] = [
+                'id'        => get_the_ID(),
+                'site'      => get_the_title(),
+                'domain'    => get_field('domain')
+            ];
+            
+        }
+        wp_reset_postdata();
+    }
+
+    return $sites;
 
 }
 

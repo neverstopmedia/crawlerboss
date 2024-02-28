@@ -122,6 +122,7 @@ function crawl_callback(){
             
         }
 
+        wp_reset_postdata();
         wp_send_json_success( $sites );
     }
 
@@ -186,7 +187,7 @@ add_action( 'wp_ajax_crawl_sitemap_sets', 'crawl_sitemap_sets' );
  */
 function jump_to_next_sitemap(){
 
-    $chunkBreakdown = null;
+    $siteBreakdown = null;
 
     $site_to_crawl              = $_POST['site_to_crawl'];
     $site_id                    = $_POST['site_id'];
@@ -194,8 +195,8 @@ function jump_to_next_sitemap(){
     $site_to_crawl_sitemaps     = $_POST['site_to_crawl_sitemaps'];
 
     // If we found a result from checkSitemaps(), lets mark as CHUNK_COMPLETE
-    $chunkBreakdown[$site_to_crawl['id']] = checkSitemaps( $site_to_crawl, $site_id, $domain, $site_to_crawl_sitemaps );
-    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $chunkBreakdown ] );
+    $siteBreakdown = checkSitemaps( $site_to_crawl, $site_id, $domain, $site_to_crawl_sitemaps );
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
 }
 add_action( 'wp_ajax_jump_to_next_sitemap', 'jump_to_next_sitemap' );

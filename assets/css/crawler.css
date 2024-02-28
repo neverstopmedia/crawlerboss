@@ -78,6 +78,10 @@
 .card-body{
     padding: 20px;
 }
+.card-body.limited{
+    max-height: 700px;
+    overflow-y: auto;
+}
 
 .badge{
     padding: 0 4px;

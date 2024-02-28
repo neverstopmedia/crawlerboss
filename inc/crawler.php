@@ -133,7 +133,7 @@ function checkSite( $siteToCrawl, $siteID ){
         // First, lets check the site, and see if we have any index links before proceeding to anything else
         // If we checked, and the domain exists, we will skip the sitemaps, otherwise we will start
         // checking the sitemaps of $siteToCrawl['id'] for $domain
-        if( $siteBreakdown[$siteToCrawl['id']] = checkPage( $siteToCrawl, $domain ) ){
+        if( $siteBreakdown = checkPage( $siteToCrawl, $domain ) ){
             
             wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
@@ -141,22 +141,20 @@ function checkSite( $siteToCrawl, $siteID ){
 
             // If the option is enabled, lets skip the sitemap check. E.G. Sites with big sitemaps
             if( get_field( 'skip_sitemap', $siteToCrawl['id'] ) ){
-                $siteBreakdown[$siteToCrawl['id']] = false;
-                wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
+                wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => false ] );
             }
 
             // Let's start checking the sitemaps.
             $siteToCrawlSitemaps = get_field( 'sitemaps', $siteToCrawl['id'] );
 
-            $siteBreakdown[$siteToCrawl['id']] = checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps );
+            $siteBreakdown = checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps );
             wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
         }
 
     }
     
-    $siteBreakdown[$siteToCrawl['id']] = false;
-    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
+    wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => false ] );
 
 }
 
@@ -201,7 +199,7 @@ function checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps ){
                     $sitemap['sitemap'],
                     [
                         'max_redirects' => 0,
-                        'timeout'       => -1
+                        'timeout'       => 30
                     ]
                 );
     
@@ -310,7 +308,7 @@ function checkPage( $siteToCrawl, $domain ){
             $siteToCrawl['domain'],
             [
                 'max_redirects' => 0,
-                'timeout'       => -1
+                'timeout'       => 30
             ]
         );
 
