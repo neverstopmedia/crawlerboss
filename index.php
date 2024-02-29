@@ -16,11 +16,13 @@ $networks = get_terms( array(
     'taxonomy'   => 'site_network',
     'hide_empty' => false,
 ) );
+
 ?>
 
 <div class="py-30 py-sm-40">
     <?php if( $networks ){ ?>
     <div class="container">
+
         <div class="d-flex mb-20 ai-c jc-b">
             <h1 class="mb-0 text-center">Select a <span class="tc-p">Network</span> </h1>
             <button type="button" class="btn" id="regenerate-sitemaps">Regenerate Sitemaps</button>

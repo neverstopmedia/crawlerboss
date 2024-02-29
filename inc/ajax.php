@@ -212,21 +212,56 @@ add_action( 'wp_ajax_jump_to_next_sitemap', 'jump_to_next_sitemap' );
 function finalize_crawl(){
 
     $siteID = isset($_POST['site_id']) ? $_POST['site_id'] : null;
-    $siteData  = isset($_POST['site_data']) ? $_POST['site_data'] : null;
+    $newData  = isset($_POST['site_data']) ? $_POST['site_data'] : null;
     
     if( !$siteID )
     wp_send_json_error( [ 'message' => 'Invalid Site' ] );
 
-    if( !$siteData )
+    if( !$newData )
     wp_send_json_success( [ 'message' => 'Complete, with no sites found' ] );
-
-    // field_65cdd29bba666 = backlink_data
-    update_field( 'field_65cdd29bba666', $siteData, $siteID );
 
     // Update the crawl date of the site
     $dt = new DateTime("now", new DateTimeZone('Asia/Dubai'));
     $dt->setTimestamp(time());
     update_field( 'last_checked', $dt->format('Y-m-d H:i:s'), $siteID );
+
+    // Let's see if we have some data already
+    if( $oldData = get_field( 'field_65cdd29bba666', $siteID ) ){
+        $newDataIds = array_column( $newData, 'referer_id' );
+
+        foreach( $oldData as $key => $oldLink ){
+            // IF we have the same site on both old and new data, keep the one from the new site only
+            if( in_array( $oldLink['referer_id'], $newDataIds ) ){
+                unset( $oldData[$key] );
+            }
+
+            $sitemaps = get_field( 'sitemaps', $oldLink['referer_id'] );
+            $sitemapsKey = null;
+
+            foreach( $sitemaps as $sitemap_link ){
+
+                // If source_modified of existing link is = last_modified of sitemap link
+                // Then lets skip this site, otherwise, we will remove it from oldData
+                if( $oldLink['source'] == $sitemap_link['sitemap'] ){
+
+                    if( $oldLink['source_modified'] == $sitemap_link['last_modified'] ){
+                        continue;
+                    }
+
+                    unset( $oldData[$key] );
+
+                }
+
+            }
+
+        }
+
+        if( $oldData && $newData )
+        $newData = array_merge( $oldData, $newData );
+    }
+
+    // field_65cdd29bba666 = backlink_data
+    update_field( 'field_65cdd29bba666', $newData, $siteID );
 
     wp_send_json_success( [ 'message' => 'Site updated with new crawl data' ] );
 

@@ -9,7 +9,7 @@ $domain         = get_field('domain');
         <p class="h6">Crawlable Sitemaps (<?php echo $sitemap_count ?>)</p>
         <?php echo get_field( 'skip_sitemap' ) ? '<small class="tc-e d-block">Skipped</small>' : null; ?>
     </div>
-    <div class="card-body">
+    <div class="card-body limited">
         <?php if( $sitemaps && is_array($sitemaps) ){ ?>
         <ul class="mb-0">
             <?php foreach( $sitemaps as $sitemap ){ ?>

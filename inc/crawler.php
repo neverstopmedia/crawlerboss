@@ -69,14 +69,27 @@ function setParentSitemap( $url, $siteID, $suffix = null ){
 function setInnerSitemaps( $sitemapURL, $siteID ){
 
     $client = HttpClient::create();
-    $response = $client->request(
-        'GET',
-        $sitemapURL,
-        [
-            'max_redirects' => 0
-        ]
-    );
+    $startTime = microtime(true);
 
+    try{
+
+        $elapsedTime = microtime(true) - $startTime;
+
+        if($elapsedTime > 29)
+        return false;
+
+        $response = $client->request(
+            'GET',
+            $sitemapURL,
+            [
+                'max_redirects' => 0
+            ]
+        );
+
+    } catch (TransportExceptionInterface $e) {
+        return false;
+    }
+    
     $xml = simplexml_load_file($sitemapURL, null, LIBXML_COMPACT);
 
     $sitemaps   = [];
@@ -138,6 +151,9 @@ function checkSite( $siteToCrawl, $siteID ){
             wp_send_json_success( [ 'code' => 'CHUNK_COMPLETE', 'siteBreakdown' => $siteBreakdown ] );
 
         }else{
+
+            // Let's update the sitemaps again
+            setInnerSitemaps( get_field( 'sitemap_url', $siteToCrawl['id'] ) , $siteToCrawl['id'] );
 
             // If the option is enabled, lets skip the sitemap check. E.G. Sites with big sitemaps
             if( get_field( 'skip_sitemap', $siteToCrawl['id'] ) ){

@@ -53,7 +53,7 @@ $last_checked = get_field( 'last_checked' );
                 <div class="card-header">
                     <p class="h6">Details</p>
                 </div>
-                <div class="card-body ajax-contentt" data-template="template-parts/crawl-modules/details" data-id="<?php echo get_the_ID() ?>">
+                <div class="card-body ajax-content" data-template="template-parts/crawl-modules/details" data-id="<?php echo get_the_ID() ?>">
 
                 </div>
             </div>
