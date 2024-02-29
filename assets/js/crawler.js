@@ -153,7 +153,6 @@
         sitemapRequest.done(function (response){
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
-                console.log('Finalizing site crawl from ProcessSitemapLinks');
                 return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
             }
 
@@ -175,7 +174,6 @@
                 siteToCrawlSitemaps.shift();
 
                 if( !siteToCrawlSitemaps.length ){
-                    console.log('Finalizing site crawl from ProcessSitemapLinks, after no sitemaps left');
                     return finalizeSiteCrawl( false, siteToCrawl, start );
                 }
 
@@ -226,8 +224,6 @@
 
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
-                console.log('Finalizing site crawl from jumpToNextSitemap');
-
                 return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
 
             }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){
@@ -242,7 +238,6 @@
                 );
 
             }else{
-                console.log('Finalizing site crawl from jumpToNextSitemap, after the last condition');
                 return finalizeSiteCrawl( false, siteToCrawl, start );
             }
 
@@ -287,7 +282,6 @@
             
             if( response.success == true && response.data.code == 'CHUNK_COMPLETE' ){
 
-                console.log('Finalizing site crawl from processSite');
                 return finalizeSiteCrawl( response.data.siteBreakdown, siteToCrawl, start );
                 
             }else if( response.success == true && response.data.code == 'CRAWL_HEARTBEAT' ){

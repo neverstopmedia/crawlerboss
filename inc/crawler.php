@@ -192,8 +192,15 @@ function checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps ){
         if( empty($last_checked) || ( !empty($last_checked) && ( strtotime( $sitemap['last_modified'] ) > strtotime($last_checked)  ) ) ){
 
             $client = HttpClient::create();
+            $startTime = microtime(true);
 
             try{
+
+                $elapsedTime = microtime(true) - $startTime;
+
+                if($elapsedTime > 29)
+                return false;
+
                 $response = $client->request(
                     'GET',
                     $sitemap['sitemap'],
@@ -301,8 +308,16 @@ function crawlIndividualSitemap( $sitemap_links, $sitemap, $domain, $siteToCrawl
  */
 function checkPage( $siteToCrawl, $domain ){
 
+    $client = HttpClient::create();
+    $startTime = microtime(true);
+
     try{
-        $client = HttpClient::create();
+
+        $elapsedTime = microtime(true) - $startTime;
+
+        if ($elapsedTime > 29)
+        return false;
+
         $response = $client->request(
             'GET',
             $siteToCrawl['domain'],
