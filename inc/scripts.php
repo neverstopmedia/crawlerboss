@@ -25,11 +25,18 @@ function crawler_scripts() {
   
   wp_enqueue_script( 'select2', CRAWLER_URI . '/assets/js/lib/select2.min.js', array('jquery'), '4.1.4', false );
   wp_enqueue_script( 'tooltipster', CRAWLER_URI . '/assets/js/lib/tooltipster.bundle.js', array('jquery'), '1.0.0', false );
-  wp_enqueue_script( 'cytoscape', CRAWLER_URI . '/assets/js/lib/cytoscape.min.js', array('jquery'), '1.0.0', false );
+
+  wp_enqueue_script( 'amcharts-index', CRAWLER_URI . '/assets/js/lib/amcharts/index.js', array('jquery'), '5.0.0', false );
+  wp_enqueue_script( 'amcharts-hierarchy', CRAWLER_URI . '/assets/js/lib/amcharts/hierarchy.js', array('jquery'), '5.0.0', false );
+  wp_enqueue_script( 'amcharts-animated', CRAWLER_URI . '/assets/js/lib/amcharts/animated.js', array('jquery'), '5.0.0', false );
   
   wp_enqueue_script( 'main', CRAWLER_URI . '/assets/js/main.js', array('jquery'), CRAWLER_VERSION, ['in_footer' => true] );
   wp_enqueue_script( 'crawler', CRAWLER_URI . '/assets/js/crawler.js', array('jquery'), CRAWLER_VERSION, [ 'in_footer' => true ] );
+  
   wp_enqueue_script( 'site', CRAWLER_URI . '/assets/js/site.js', array('jquery'), CRAWLER_VERSION, [ 'in_footer' => true ] );
+
+  if( is_tax('site_network') )
+  wp_enqueue_script( 'network', CRAWLER_URI . '/assets/js/network.js', array('jquery'), CRAWLER_VERSION, ['in_footer' => true] );
 
   wp_localize_script( 'main', 'crawler_ajax_obj', [
     'ajaxurl' => admin_url('admin-ajax.php'),

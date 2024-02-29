@@ -26,7 +26,7 @@ function regenerate_sitemaps(){
             }
 
         }
-
+        wp_reset_postdata();
         wp_send_json_success( ['message' => 'Regenerated sitemaps for ' . $count . ' sites'] );
     }
 
@@ -280,3 +280,67 @@ function get_content_ajax(){
 
 }
 add_action( 'wp_ajax_get_content_ajax', 'get_content_ajax' );
+
+/**
+ * Get the list of sites for a network, only if they have backlinks
+ * 
+ * @since 1.0.0
+ */
+function generate_network_graph(){
+
+    $network = $_POST['network'];
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'site_network',
+                'field'    => 'id',
+                'terms'    => array( $network )
+            )
+        ),
+        'meta_query' => array(
+            array(
+              'key' => 'backlink_data',
+              'compare' => 'EXISTS',
+            ),
+        ),
+    );
+
+    $query = new WP_Query( $args );
+    $sites = [];
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( !$children = get_field( 'backlink_data' ) )
+            continue;
+
+            $links = null;
+
+            foreach( $children as $child ){
+                $links[] = [
+                    'name' => get_the_title($child['referer_id']),
+                    'value' => $child['referer_id']
+                ];
+            }
+
+            $sites[] = [
+                'name' => get_the_title(),
+                'children' => $links
+            ];
+
+        }
+        wp_reset_postdata();
+        
+        if( $sites );
+        wp_send_json_success( ['message' => 'Chart Retrieved', 'sites' => $sites] );
+
+    }
+
+    wp_send_json_error( ['message' => 'No data for this network'] );
+
+}
+add_action( 'wp_ajax_generate_network_graph', 'generate_network_graph' );

@@ -25,7 +25,7 @@ $networks = get_terms( array(
 
         <div class="d-flex mb-20 ai-c jc-b">
             <h1 class="mb-0 text-center">Select a <span class="tc-p">Network</span> </h1>
-            <button type="button" class="btn" id="regenerate-sitemaps">Regenerate Sitemaps</button>
+            <button type="button" class="btn btn-outline" id="regenerate-sitemaps">Regenerate Sitemaps</button>
         </div>
         <div class="crawler--networks row jc-c">
             <?php foreach( $networks as $network ){ ?>
