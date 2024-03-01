@@ -34,7 +34,6 @@
 
         });
 
-
         function doGraph( linksData ){
 
             // Create root element

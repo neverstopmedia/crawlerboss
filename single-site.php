@@ -42,16 +42,16 @@ $last_checked = get_field( 'last_checked' );
         <div class="md-4">
             <?php get_template_part( 'template-parts/crawl-modules/sitemaps' ) ?>
         </div>
-        <div class="md-4">
+        <div class="md-12">
             <?php get_template_part( 'template-parts/crawl-modules/keyword-distribution' ) ?>
         </div>
-        <div class="md-8">
+        <div class="md-12">
             <?php get_template_part( 'template-parts/crawl-modules/opportunities' ) ?>
         </div>
         <div class="md-12">
             <div class="card">
                 <div class="card-header">
-                    <p class="h6">Details</p>
+                    <p class="h6">Backlinks</p>
                 </div>
                 <div class="card-body ajax-content" data-template="template-parts/crawl-modules/details" data-id="<?php echo get_the_ID() ?>">
 

@@ -344,3 +344,35 @@ function generate_network_graph(){
 
 }
 add_action( 'wp_ajax_generate_network_graph', 'generate_network_graph' );
+
+/**
+ * Get the list keyword distribution for a site
+ * 
+ * @since 1.0.0
+ */
+function generate_keyword_distribution_graph(){
+    
+    $site_id = $_POST['site_id'];
+
+    $keyword_distribution = getKeywordDistribution( get_field( 'backlink_data', $site_id ) );
+
+    $data = [];
+
+    foreach( $keyword_distribution as $key => $count ){ 
+        if( $key == 'count' )
+        continue;
+        
+        $data[] = [
+            'keyword'   => $key,
+            'value'     => $count
+        ];
+
+    }
+
+    if( $data );
+    wp_send_json_success( ['message' => 'Chart Retrieved', 'keywords' => $data] );
+
+    wp_send_json_error( ['message' => 'No data for this network'] );
+
+}
+add_action( 'wp_ajax_generate_keyword_distribution_graph', 'generate_keyword_distribution_graph' );
