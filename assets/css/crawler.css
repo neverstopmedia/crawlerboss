@@ -119,3 +119,8 @@
     color: #fff;
     background-color: #f39645;
 }
+
+#keywordDistributionChart{
+    min-height: 400px;
+    height: 100%;
+}

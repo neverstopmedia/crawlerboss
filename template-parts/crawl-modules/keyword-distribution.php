@@ -26,7 +26,7 @@
                     <?php } ?>
                 </div>
                 <div class="md-8">
-                    <div id="keywordDistributionChart" data-id="<?php echo get_the_ID(); ?>" class="w-100 d-flex ai-c jc-c" style="height: 400px;">
+                    <div id="keywordDistributionChart" data-id="<?php echo get_the_ID(); ?>" class="w-100 d-flex ai-c jc-c">
                         <span class="loader"></span>
                     </div>
                 </div>
