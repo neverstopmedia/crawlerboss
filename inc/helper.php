@@ -274,6 +274,56 @@ function getOpportunities( $data, $siteID ){
 
 }
 
+/**
+ * Returns a list of sites where the $siteID is linkedFrom
+ * 
+ * @var int $siteID - The site ID in which we want to add to the post_not_in
+ * 
+ * @since 1.0.0
+ */
+function linksTo( $siteID ){
+
+    $site_domain = get_field( 'domain', $siteID );
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+        'post__not_in'      => [ $siteID ]
+    );
+
+    $query = new WP_Query( $args );
+    $sites = array();
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( $backlink_data = get_field( 'backlink_data' ) ){
+
+                foreach( $backlink_data as $link ){
+                    if( extractDomain($site_domain) == extractDomain($link['link_from']) ){
+
+                        $sites[] = [
+                            'link_from' => $link['link_from'],
+                            'link_to' => $link['link_to']
+                        ];
+                        break;
+                    }
+
+                }
+
+            }else{
+                continue;
+            }
+            
+        }
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
+}
+
 function time_elapsed_string($datetime, $full = false) {
     $now = new DateTime;
     $ago = new DateTime($datetime);

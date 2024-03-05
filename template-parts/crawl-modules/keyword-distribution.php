@@ -1,8 +1,9 @@
 <?php $backlink_data = get_field( 'backlink_data' ); ?>
 
-<div class="card">
-    <div class="card-header">
+<div class="card can-toggle">
+    <div class="card-header d-flex ai-c jc-b">
         <p class="h6">Keyword Distribution</p>
+        <i class="c-pointer toggle fas fa-chevron-down"></i>
     </div>
     <div class="card-body">
         <?php 

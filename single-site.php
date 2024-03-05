@@ -45,8 +45,11 @@ $last_checked = get_field( 'last_checked' );
         <div class="md-12">
             <?php get_template_part( 'template-parts/crawl-modules/keyword-distribution' ) ?>
         </div>
-        <div class="md-12">
+        <div class="md-8">
             <?php get_template_part( 'template-parts/crawl-modules/opportunities' ) ?>
+        </div>
+        <div class="md-4">
+            <?php get_template_part( 'template-parts/crawl-modules/linking-to' ) ?>
         </div>
         <div class="md-12">
             <div class="card">
