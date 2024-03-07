@@ -13,7 +13,11 @@ class Crawler_Logger{
     public function __construct( $context = null, $text = null ){
         $this->context  = $context;
         $this->text     = $text;
-        $this->time     = date('Y-m-d H:i:s');
+
+        $dt = new DateTime("now", new DateTimeZone('Asia/Dubai'));
+        $dt->setTimestamp(time());
+
+        $this->time     = $dt->format('Y-m-d H:i:s');
     }
 
     public function insert(){

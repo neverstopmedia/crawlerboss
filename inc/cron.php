@@ -174,6 +174,8 @@ function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps
 
     foreach( $siteToCrawlSitemaps as $key => $sitemap ){
 
+        Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][WORKING] Crawling ' . $sitemap['sitemap'] );
+
         // Check if $last_checked is empty. Meaning that we didn't crawl the domain yet
         // If we already crawled the domain, and last_checked is not empty
         // then we can check if last_modified is greater than last_checked, and only crawl if it is
