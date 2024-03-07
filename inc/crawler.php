@@ -117,9 +117,6 @@ function setInnerSitemaps( $sitemapURL, $siteID, $cronKey = null ){
 
     }
 
-    if( $sitemaps && $cronKey )
-    Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][SUCCESS] Sitemaps updated for ' . get_the_title($siteID) );
-
     if( $sitemaps ){
         update_field( 'sitemaps', $sitemaps, $siteID );
     }
