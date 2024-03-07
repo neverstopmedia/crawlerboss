@@ -68,12 +68,11 @@ $networks = get_terms( array(
             </div>
         </div>
 
-        <div class="card can-toggle">
+        <div class="card">
             <div class="card-header d-flex ai-c jc-b">
                 <p class="h6">Site Logs</p>
-                <i class="c-pointer toggle fas fa-chevron-down"></i>
             </div>
-            <div class="card-body limited d-none">
+            <div class="card-body limited">
                 <?php get_template_part( 'template-parts/crawl-modules/logs' ); ?>
             </div>
         </div>

@@ -67,10 +67,17 @@ function crawlByCron( $list ){
             Crawler_Logger_Helper::log( 'cron', 'Crawl Started for ' . get_the_title($siteID) );
 
             if( $sites ){
-                foreach( $sites as $siteToCrawl ){
+
+                $newSiteData = [];
+
+                foreach( $sites as $key => $siteToCrawl ){
 
                     // if we got a site breakdown, lets save it
-                    if( $newSiteData = checkSiteCron( $siteToCrawl, $siteID ) )
+                    if( $data = checkSiteCron( $siteToCrawl, $siteID ) )
+                    $newSiteData[] = $data;
+                    
+                    // If we are in the last element and newSiteData is not empty
+                    if( $newSiteData && ( $key == count($sites) - 1 ) )
                     saveSiteCron( $newSiteData, $siteID );
 
                 }
