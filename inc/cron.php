@@ -20,22 +20,23 @@ function scheduleCrawls(){
         if( !wp_next_scheduled( 'crawl_cron_'.$key, [$list] ) ) {
             $multiplier = $key + 1;
             $time = date( 'Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s')) + ( 36000 * $multiplier ) );
-            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, [$list] );
+            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, [$list], 'crawl_cron_'.$key );
         }
 
-        add_action( 'crawl_cron_'.$key, 'crawlByCron', 10, 1 );
+        add_action( 'crawl_cron_'.$key, 'crawlByCron', 10, 2 );
     }
 
 }
-add_action( 'init', 'scheduleCrawls', 10, 1 );
+add_action( 'init', 'scheduleCrawls' );
 
 /**
  * Crawls the sites cron
  * 
  * @var Array - The list of sites we want to crawl in this cron
+ * @var String - The cron job key
  * @since 1.0.0
  */
-function crawlByCron( $list ){
+function crawlByCron( $list, $cronKey ){
 
     if( empty($list) ){
         Crawler_Logger_Helper::log( 'cron', '[FAIL] Cron list missing' );
@@ -64,7 +65,7 @@ function crawlByCron( $list ){
                 
             }
             
-            Crawler_Logger_Helper::log( 'cron', 'Crawl Started for ' . get_the_title($siteID) );
+            Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'] Crawl Started for ' . get_the_title($siteID) );
 
             if( $sites ){
 
@@ -73,12 +74,12 @@ function crawlByCron( $list ){
                 foreach( $sites as $key => $siteToCrawl ){
 
                     // if we got a site breakdown, lets save it
-                    if( $data = checkSiteCron( $siteToCrawl, $siteID ) )
+                    if( $data = checkSiteCron( $siteToCrawl, $siteID, $cronKey ) )
                     $newSiteData[] = $data;
                     
                     // If we are in the last element and newSiteData is not empty
                     if( $newSiteData && ( $key == count($sites) - 1 ) )
-                    saveSiteCron( $newSiteData, $siteID );
+                    saveSiteCron( $newSiteData, $siteID, $cronKey );
 
                 }
             }
@@ -101,10 +102,10 @@ function crawlByCron( $list ){
  * 
  * @since 1.0.0
  */
-function checkSiteCron( $siteToCrawl, $siteID ){
+function checkSiteCron( $siteToCrawl, $siteID, $cronKey ){
 
     if( !$siteToCrawl || !is_array($siteToCrawl) || empty($siteID) ){
-        Crawler_Logger_Helper::log( 'cron', '[FAIL] SiteID or SiteToCrawl are missing' );
+        Crawler_Logger_Helper::log( 'cron', '['.$cronKey.'][FAIL] SiteID or SiteToCrawl are missing' );
         return false;
     }
 
@@ -117,23 +118,23 @@ function checkSiteCron( $siteToCrawl, $siteID ){
         // If we checked, and the domain exists, we will skip the sitemaps, otherwise we will start
         // checking the sitemaps of $siteToCrawl['id'] for $domain
         if( $siteBreakdown = checkPage( $siteToCrawl, $domain ) ){
-            Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Link was found for ' . $domain . ' in ' . $siteToCrawl['domain'] );
+            Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][SUCCESS] Link was found for ' . $domain . ' in ' . $siteToCrawl['domain'] );
             return $siteBreakdown;
         }else{
 
             // Let's update the sitemaps again
-            setInnerSitemaps( get_field( 'sitemap_url', $siteToCrawl['id'] ) , $siteToCrawl['id'] );
+            setInnerSitemaps( get_field( 'sitemap_url', $siteToCrawl['id'] ), $siteToCrawl['id'], $cronKey );
 
             // If the option is enabled, lets skip the sitemap check. E.G. Sites with big sitemaps
             if( get_field( 'skip_sitemap', $siteToCrawl['id'] ) ){
-                Crawler_Logger_Helper::log( 'cron', '[FAIL] No links found, and sitemap is being skipped for ' . $siteToCrawl['domain'] );
+                Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][FAIL] No links found, and sitemap is being skipped for ' . $siteToCrawl['domain'] );
                 return false;
             }
 
             // Let's start checking the sitemaps.
             $siteToCrawlSitemaps = get_field( 'sitemaps', $siteToCrawl['id'] );
 
-            return checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps );
+            return checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps, $cronKey );
 
         }
 
@@ -156,10 +157,10 @@ function checkSiteCron( $siteToCrawl, $siteID ){
  * 
  * @since 1.0.0
  */
-function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps ){
+function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps, $cronKey ){
     
     if( !$siteToCrawlSitemaps ){
-        Crawler_Logger_Helper::log( 'cron', '[FAIL] ' . $siteToCrawl['domain'] . ' does not have any sitemaps' );
+        Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][FAIL] ' . $siteToCrawl['domain'] . ' does not have any sitemaps' );
         return false;
     }
 
@@ -186,7 +187,7 @@ function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps
                 $elapsedTime = microtime(true) - $startTime;
 
                 if($elapsedTime > 29){
-                    Crawler_Logger_Helper::log( 'cron', '[FAIL] More than 29 seconds have passed' );
+                    Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][FAIL] More than 29 seconds have passed' );
                     return false;
                 }
 
@@ -209,8 +210,10 @@ function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps
 
             $sitemap_links = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
 
-            if( $results = crawlIndividualSitemap( $sitemap_links, $sitemap, $domain, $siteToCrawl ) )
-            return $results;
+            if( $results = crawlIndividualSitemap( $sitemap_links, $sitemap, $domain, $siteToCrawl ) ){
+                Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][SUCCESS] Link was found for ' . $domain . ' in ' . $siteToCrawl['domain'] . ' through sitemap' );
+                return $results;
+            }
 
             // If we didnt find anything in the sitemap, lets remove it from the array
             unset($siteToCrawlSitemaps[$key]);
@@ -228,7 +231,7 @@ function checkSitemapsCron( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps
  * 
  * @since 1.0.0
  */
-function saveSiteCron( $newSiteData, $siteID ){
+function saveSiteCron( $newSiteData, $siteID, $cronKey ){
 
     if( !$siteID )
     return false;
@@ -277,7 +280,7 @@ function saveSiteCron( $newSiteData, $siteID ){
     }
 
     // field_65cdd29bba666 = backlink_data
-    Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Data updated for ' . get_the_title($siteID) );
+    Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][SUCCESS] Data updated for ' . get_the_title($siteID) );
     update_field( 'field_65cdd29bba666', $newSiteData, $siteID );
 
     return true;

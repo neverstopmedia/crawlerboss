@@ -66,7 +66,7 @@ function setParentSitemap( $url, $siteID, $suffix = null ){
  * 
  * @since 1.0.0
  */
-function setInnerSitemaps( $sitemapURL, $siteID ){
+function setInnerSitemaps( $sitemapURL, $siteID, $cronKey = null ){
 
     $client = HttpClient::create();
     $startTime = microtime(true);
@@ -117,8 +117,10 @@ function setInnerSitemaps( $sitemapURL, $siteID ){
 
     }
 
+    if( $sitemaps && $cronKey )
+    Crawler_Logger_Helper::log( 'cron [' . $siteID . ']', '['.$cronKey.'][SUCCESS] Sitemaps updated for ' . get_the_title($siteID) );
+
     if( $sitemaps ){
-        Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Sitemaps updated for ' . get_the_title($siteID) );
         update_field( 'sitemaps', $sitemaps, $siteID );
     }
      
