@@ -20,7 +20,7 @@ function scheduleCrawls(){
         if( !wp_next_scheduled( 'crawl_cron_'.$key, [$list] ) ) {
             $multiplier = $key + 1;
             $time = date( 'Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s')) + ( 36000 * $multiplier ) );
-            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, [$list], 'crawl_cron_'.$key );
+            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, [[$list], 'crawl_cron_'.$key] );
         }
 
         add_action( 'crawl_cron_'.$key, 'crawlByCron', 10, 2 );
