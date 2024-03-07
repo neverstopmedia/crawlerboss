@@ -19,7 +19,6 @@ class Crawler_Logger_Actions{
         if( get_option('crawler_logs_db_init') )
         return false;
 
-
 		global $wpdb;
 
         $table_name      = $wpdb->prefix.'crawler_logs';

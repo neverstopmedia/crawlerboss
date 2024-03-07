@@ -110,8 +110,8 @@ function checkSiteCron( $siteToCrawl, $siteID ){
         // If we checked, and the domain exists, we will skip the sitemaps, otherwise we will start
         // checking the sitemaps of $siteToCrawl['id'] for $domain
         if( $siteBreakdown = checkPage( $siteToCrawl, $domain ) ){
-            Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Link was found for ' . $domain );
-            return true;
+            Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Link was found for ' . $domain . ' in ' . $siteToCrawl['domain'] );
+            return $siteBreakdown;
         }else{
 
             // Let's update the sitemaps again
