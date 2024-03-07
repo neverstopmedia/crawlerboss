@@ -51,7 +51,7 @@ $network = get_queried_object();
                             <img class="mr-10" src="https://www.google.com/s2/favicons?domain=<?php echo get_field('domain') ?>" alt="Site">
                             <div class="f-1">
                                 <p class="mb-0"><b><?php echo get_the_title(); ?></b></p>
-                                <span><?php echo $last_checked ? time_elapsed_string($last_checked) : 'Not Crawled yet' ?></span>
+                                <span><?php echo $last_checked ? time_elapsed_string($last_checked) . ' ago' : 'Not Crawled yet' ?></span>
                                 <?php if( get_field( 'skip_cron' ) ){ ?>
                                 <small class="tc-e d-block">This site can only be manually crawled</small>
                                 <?php } ?>

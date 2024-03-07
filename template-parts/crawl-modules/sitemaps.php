@@ -15,7 +15,7 @@ $domain         = get_field('domain');
             <?php foreach( $sitemaps as $sitemap ){ ?>
             <li>
                 <p class="fs-14 mb-5"><?php echo str_replace( $domain, '', $sitemap['sitemap']); ?></p>
-                <small>Last modified: <?php echo time_elapsed_string($sitemap['last_modified']) ?></small>
+                <small>Last modified: <?php echo time_elapsed_string($sitemap['last_modified']) . ' ago' ?></small>
             </li>
             <?php } ?>
         </ul>

@@ -242,8 +242,12 @@ function getKeywordDistribution( $data ){
  */
 function getOpportunities( $data, $siteID ){
 
-    $existing_sites = array_column( $data , 'referer_id' );
-    array_push( $existing_sites, $siteID );
+    $existing_sites = [];
+
+    if( $data && is_array($data) ){
+        $existing_sites = array_column( $data , 'referer_id' );
+        array_push( $existing_sites, $siteID );
+    }
     
     $args = array(
         'post_type'         => 'site',
@@ -350,5 +354,45 @@ function time_elapsed_string($datetime, $full = false) {
     }
 
     if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) . ' ago' : 'just now';
+    return $string ? implode(', ', $string) : 'just now';
+}
+
+/**
+ * Splits up all the sites into an array of arrays that contains $chunkCount sites
+ * 
+ * @var int $chunkCount - The number of sites to have in an array
+ * 
+ * @since 1.0.0
+ */
+function getSitesInChunks( $chunkCount = 10 ){
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1
+    );
+
+    $query = new WP_Query( $args );
+    $sites = array();
+
+    if ( $query->have_posts() ) {
+        $i = 0;
+        $j = 0;
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( get_field( 'skip_cron' ) )
+            continue;
+
+            $sites[$j][] = get_the_ID();
+
+            if( $i % $chunkCount == 0 && $i != 0 )
+            $j++;
+
+            $i++;
+        }
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
 }

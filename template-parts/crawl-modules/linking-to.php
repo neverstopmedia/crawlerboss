@@ -8,7 +8,7 @@
             <div>
                 <?php foreach( $linksTo as $link ){ ?>
                 <div class="mt-10">
-                    <p class="d-flex ai-c mb-5 fs-14"><?php echo $link['link_from'] ?></p>
+                    <a href="<?php echo $link['link_from'] ?>" target="_blank" class="d-flex ai-c mb-5 fs-14"><?php echo $link['link_from'] ?></a>
                     <p class="fs-12 d-block word-break color-link mb-0"><?php echo $link['link_to'] ?></p>
                 </div>
                 <?php } ?>

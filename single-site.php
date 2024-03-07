@@ -20,7 +20,7 @@ $last_checked = get_field( 'last_checked' );
     <div class="d-flex ai-c jc-b mb-40">
         <div>
             <h1 class="mb-5"><?php the_title(); ?></h1>
-            <span> <b>Last Crawled: </b> <?php echo $last_checked ? time_elapsed_string($last_checked) : 'Not Crawled yet' ?></span>
+            <span> <b>Last Crawled: </b> <?php echo $last_checked ? time_elapsed_string($last_checked) . ' ago' : 'Not Crawled yet' ?></span>
         </div>
         <div class="d-flex">
             <a href="<?php echo get_home_url('/') ?>" class="btn btn-outline">Back home</a>

@@ -20,6 +20,7 @@ $networks = get_terms( array(
 ?>
 
 <div class="py-30 py-sm-40">
+
     <?php if( $networks ){ ?>
     <div class="container">
 
@@ -54,6 +55,18 @@ $networks = get_terms( array(
 
     </div>
     <?php } ?>
+
+    <div class="container mt-40">
+        <div class="card can-toggle">
+            <div class="card-header d-flex ai-c jc-b">
+                <p class="h6">Cron Schedule</p>
+                <i class="c-pointer toggle fas fa-chevron-down"></i>
+            </div>
+            <div class="card-body d-none">
+                <?php get_template_part( 'template-parts/crawl-modules/cron-jobs' ); ?>
+            </div>
+        </div>
+    </div>
 
 </div>
 
