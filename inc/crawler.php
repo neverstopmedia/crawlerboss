@@ -117,8 +117,10 @@ function setInnerSitemaps( $sitemapURL, $siteID ){
 
     }
 
-    if( $sitemaps )
-    update_field( 'sitemaps', $sitemaps, $siteID );
+    if( $sitemaps ){
+        Crawler_Logger_Helper::log( 'cron', '[SUCCESS] Sitemaps updated for ' . get_the_title($siteID) );
+        update_field( 'sitemaps', $sitemaps, $siteID );
+    }
      
 }
 

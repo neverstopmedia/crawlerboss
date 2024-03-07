@@ -21,7 +21,7 @@ if( $cron_jobs = _get_cron_array() ){
                         <?php echo $event['schedule'] ?> - Next run in <?php echo time_elapsed_string(date( 'd-m-Y H:i:s', $interval )) ?></small>
                     </p> 
                     <div class="row mb-30">
-                    <?php foreach( $event['args'] as $site ){ ?>
+                    <?php foreach( $event['args'][0] as $site ){ ?>
                         <div class="md-3">
                         <?php echo get_the_title($site); ?>
                         </div>

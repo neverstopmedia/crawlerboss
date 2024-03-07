@@ -1,7 +1,7 @@
 <?php
 define( 'CRAWLER_DIR', get_template_directory() );
 define( 'CRAWLER_URI', get_template_directory_uri() );
-define( 'CRAWLER_VERSION', '1.2.1' );
+define( 'CRAWLER_VERSION', '1.2.2' );
 
 include 'vendor/autoload.php';
 
@@ -12,6 +12,13 @@ include 'inc/scripts.php';
 // Site Post type
 include 'inc/post-types/site/post-type.php';
 include 'inc/post-types/site/taxonomies.php';
+
+// Logger
+include 'inc/logger/class-logger.php';
+include 'inc/logger/class-logger-helper.php';
+include 'inc/logger/class-logger-actions.php';
+
+new Crawler_Logger_Actions;
 
 include 'inc/helper.php';
 include 'inc/ajax.php';

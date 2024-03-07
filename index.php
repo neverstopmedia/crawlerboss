@@ -57,6 +57,7 @@ $networks = get_terms( array(
     <?php } ?>
 
     <div class="container mt-40">
+
         <div class="card can-toggle">
             <div class="card-header d-flex ai-c jc-b">
                 <p class="h6">Cron Schedule</p>
@@ -66,6 +67,17 @@ $networks = get_terms( array(
                 <?php get_template_part( 'template-parts/crawl-modules/cron-jobs' ); ?>
             </div>
         </div>
+
+        <div class="card can-toggle">
+            <div class="card-header d-flex ai-c jc-b">
+                <p class="h6">Site Logs</p>
+                <i class="c-pointer toggle fas fa-chevron-down"></i>
+            </div>
+            <div class="card-body limited d-none">
+                <?php get_template_part( 'template-parts/crawl-modules/logs' ); ?>
+            </div>
+        </div>
+
     </div>
 
 </div>
