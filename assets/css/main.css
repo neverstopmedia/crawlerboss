@@ -565,6 +565,16 @@ textarea {
     padding: 15px;
 }
 
+.alert{
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 12px;
+}
+.alert-warning{
+    color: orange;
+    background-color: #fff7e9;
+}
+
 /*--------------------------------------------------------------
 5.0 Search
 --------------------------------------------------------------*/

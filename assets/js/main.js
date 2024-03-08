@@ -5,7 +5,9 @@ jQuery(document).ready(function() {
         'use strict';
 
         if( $("#cronLogs").length )
-        new DataTable('#cronLogs');
+        new DataTable('#cronLogs', {
+            "ordering": false
+        });
 
         // Select2
         $('.crawler--select2').on('change', function(){

@@ -55,6 +55,15 @@ function sitemapSort($a, $b) {
 }
 
 /**
+ * Sort the array based on count
+ * 
+ * @since 1.0.0
+ */
+function sortByLinkCount($site1, $site2) {
+    return count($site2['links']) - count($site1['links']);
+}
+
+/**
  * Get taxonomy terms.
  * 
  * @param int @post_id - The post id to get terms for
@@ -271,6 +280,128 @@ function getOpportunities( $data, $siteID ){
             ];
             
         }
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
+}
+
+/**
+ * Get a list of sites that havent been updated in 30 days
+ * 
+ * @since 1.0.0
+ */
+function getAbandonedSites(){
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1
+    );
+    
+    $query = new WP_Query( $args );
+    $sites = array();
+    
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( $sitemaps = get_field( 'sitemaps' ) ){
+                
+                usort( $sitemaps, function($sitemap1, $sitemap2){
+                    return strtotime($sitemap2['last_modified']) > strtotime($sitemap1['last_modified']);
+                });
+                    
+                if( strtotime( $sitemaps[0]['last_modified'] ) < strtotime('-30 day') ){
+                    $sites[] = [
+                        'site'          => get_the_title(),
+                        'domain'        => get_field('domain'),
+                        'last_updated'  => $sitemaps[0]['last_modified']
+                    ];
+                }
+
+            }
+    
+        }
+    
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
+}
+
+/**
+ * Get the 10 sites that have the most number of links
+ * 
+ * @since 1.0.0
+ */
+function getSitesWithMostLinks(){
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+        'meta_query'        => [
+            [
+                'key'     => 'backlink_data',
+                'compare' => 'EXISTS',
+            ]
+        ]
+    );
+    
+    $query = new WP_Query( $args );
+    $sites = array();
+    
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( $links = get_field( 'backlink_data' ) ){
+                $sites[] = [
+                    'site'      => get_the_title(),
+                    'domain'    => get_field('domain'),
+                    'permalink' => get_the_permalink(),
+                    'links'     => $links
+                ];
+            }
+    
+        }
+    
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
+}
+
+/**
+ * Get the sites with no links
+ * 
+ * @since 1.0.0
+ */
+function getOrphanedSites(){
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+    );
+    
+    $query = new WP_Query( $args );
+    $sites = array();
+    
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            if( !get_field('backlink_data') ){
+                $sites[] = [
+                    'site' => get_the_title(),
+                    'domain' => get_field('domain')
+                ];
+            }
+    
+        }
+    
         wp_reset_postdata();
     }
 

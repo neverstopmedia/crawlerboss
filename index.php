@@ -58,12 +58,51 @@ $networks = get_terms( array(
 
     <div class="container mt-40">
 
+        <div class="row">
+            <div class="md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="h6">Abandoned Sites</p>
+                        <span class="d-block mt-5 fs-12">Sites that haven't been updated in the past month</span>
+                    </div>
+                    <div class="card-body limited">
+                        <?php get_template_part( 'template-parts/crawl-modules/abandoned-sitemaps' ); ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="h6">Top Linked</p>
+                        <span class="d-block mt-5 fs-12">Top 10 sites with the most number of backlinks</span>
+                    </div>
+                    <div class="card-body limited">
+                        <?php get_template_part( 'template-parts/crawl-modules/top-linked' ); ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="h6">Orphaned Sites</p>
+                        <span class="d-block mt-5 fs-12">Sites with no links at all</span>
+                    </div>
+                    <div class="card-body limited">
+                        <?php get_template_part( 'template-parts/crawl-modules/orphaned-sites' ); ?>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
         <div class="card can-toggle">
             <div class="card-header d-flex ai-c jc-b">
                 <p class="h6">Cron Schedule</p>
                 <i class="c-pointer toggle fas fa-chevron-down"></i>
             </div>
-            <div class="card-body d-none">
+            <div class="card-body d-none limited">
                 <?php get_template_part( 'template-parts/crawl-modules/cron-jobs' ); ?>
             </div>
         </div>
