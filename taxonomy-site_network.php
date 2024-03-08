@@ -26,7 +26,11 @@ $network = get_queried_object();
         <a href="<?php echo get_home_url('/') ?>" class="btn btn-outline">Back home</a>
     </div>
     <?php if(have_posts()){ ?>
-    <div id="siteDistributionChart" class="d-flex ai-c jc-c border mb-30" data-network="<?php echo $network->term_id ?>" style="height: 600px"> <span class="loader"></span> </div>
+    
+    <!-- <div id="siteDistributionChart" class="d-flex ai-c jc-c border mb-30" data-network="<?php echo $network->term_id ?>" style="height: 600px"> 
+        <span class="loader"></span> 
+    </div> -->
+    
     <label>Domain</label>
     <input id="dynamic-search" type="text" class="mb-15" placeholder="Search for a domain">
     <table id="siteTable" class="fs-14">
