@@ -1,6 +1,9 @@
 (function ($) {
     'use strict';
 
+    if( !$("#keywordDistributionChart").length )
+    return;
+
     am5.ready(function() {
 
         let request;

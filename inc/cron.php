@@ -17,10 +17,12 @@ function scheduleCrawls(){
 
     foreach( $splitSites as $key => $list ){
 
-        if( !wp_next_scheduled( 'crawl_cron_'.$key, [$list] ) ) {
+        $args = [ $list, 'crawl_cron_'.$key];
+
+        if( !wp_next_scheduled( 'crawl_cron_'.$key, $args ) ) {
             $multiplier = $key + 1;
             $time = date( 'Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s')) + ( 36000 * $multiplier ) );
-            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, [[$list], 'crawl_cron_'.$key] );
+            wp_schedule_event( strtotime($time), 'weekly', 'crawl_cron_'.$key, $args );
         }
 
         add_action( 'crawl_cron_'.$key, 'crawlByCron', 10, 2 );
@@ -78,7 +80,7 @@ function crawlByCron( $list, $cronKey ){
                     $newSiteData[] = $data;
                     
                     // If we are in the last element and newSiteData is not empty
-                    if( $newSiteData && ( $key == count($sites) - 1 ) )
+                    if( $key == count($sites) - 1 )
                     saveSiteCron( $newSiteData, $siteID, $cronKey );
 
                 }
@@ -238,13 +240,13 @@ function saveSiteCron( $newSiteData, $siteID, $cronKey ){
     if( !$siteID )
     return false;
 
-    if( !$newSiteData )
-    return false;
-
     // Update the crawl date of the site
     $dt = new DateTime("now", new DateTimeZone('Asia/Dubai'));
     $dt->setTimestamp(time());
     update_field( 'last_checked', $dt->format('Y-m-d H:i:s'), $siteID );
+
+    if( !$newSiteData )
+    return false;
 
     // Let's see if we have some data already
     if( $oldData = get_field( 'field_65cdd29bba666', $siteID ) ){
