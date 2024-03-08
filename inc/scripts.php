@@ -26,6 +26,9 @@ function crawler_scripts() {
   wp_enqueue_script( 'select2', CRAWLER_URI . '/assets/js/lib/select2.min.js', array('jquery'), '4.1.4', false );
   wp_enqueue_script( 'tooltipster', CRAWLER_URI . '/assets/js/lib/tooltipster.bundle.js', array('jquery'), '1.0.0', false );
 
+  wp_enqueue_style( 'datatables', CRAWLER_URI . '/assets/css/lib/datatables.min.css', array(), '2.0.2');
+  wp_enqueue_script( 'amcharts-percent', CRAWLER_URI . '/assets/js/lib/datatables.min.js', array('jquery'), '2.0.2', false );
+
   wp_enqueue_script( 'amcharts-index', CRAWLER_URI . '/assets/js/lib/amcharts/index.js', array('jquery'), '5.0.0', false );
   wp_enqueue_script( 'amcharts-hierarchy', CRAWLER_URI . '/assets/js/lib/amcharts/hierarchy.js', array('jquery'), '5.0.0', false );
   wp_enqueue_script( 'amcharts-animated', CRAWLER_URI . '/assets/js/lib/amcharts/animated.js', array('jquery'), '5.0.0', false );

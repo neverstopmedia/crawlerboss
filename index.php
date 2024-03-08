@@ -72,7 +72,7 @@ $networks = get_terms( array(
             <div class="card-header d-flex ai-c jc-b">
                 <p class="h6">Site Logs</p>
             </div>
-            <div class="card-body limited">
+            <div class="card-body">
                 <?php get_template_part( 'template-parts/crawl-modules/logs' ); ?>
             </div>
         </div>

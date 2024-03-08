@@ -9,7 +9,7 @@ class Crawler_Logger_Helper{
 
     }
 
-    public static function get( $args = [], $limit = 100 ){
+    public static function get( $args = [], $limit = 2000 ){
 
         $logger = new Crawler_Logger();
         return $logger->get( $args, $limit );

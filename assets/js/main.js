@@ -4,6 +4,9 @@ jQuery(document).ready(function() {
     (function ($) {
         'use strict';
 
+        if( $("#cronLogs").length )
+        new DataTable('#cronLogs');
+
         // Select2
         $('.crawler--select2').on('change', function(){
 

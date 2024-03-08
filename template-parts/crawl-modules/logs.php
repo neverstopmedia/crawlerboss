@@ -4,7 +4,7 @@
 <?php if( $logs = Crawler_Logger_Helper::get() ){ ?>
 
 <div class="logs-wrap">
-    <table class="mb-0 crawler-logs">
+    <table id="cronLogs" class="mb-0 crawler-logs">
         <thead>
             <tr>
                 <th></th>

@@ -125,3 +125,15 @@
     min-height: 400px;
     height: 100%;
 }
+
+div.dt-container .dt-input{
+    height: 30px;
+    width: auto;
+    display: inline-block;
+}
+div.dt-container label{
+    display: inline-block;
+}
+div.dt-container select.dt-input{
+    margin-right: 5px;
+}
