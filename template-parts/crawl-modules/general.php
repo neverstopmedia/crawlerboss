@@ -19,7 +19,7 @@
             </span>
         </div>
         <div class="d-flex ai-c jc-b mb-5">
-            <b>Site URL</b>
+            <b>URL</b>
             <a href="<?php echo $domain ?>" target="_blank">
                 <?php echo $domain ?>
                 <i class="ml-5 fs-12 fa-solid fa-arrow-up-right-from-square"></i>

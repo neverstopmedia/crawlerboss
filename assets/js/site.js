@@ -1,6 +1,52 @@
 (function ($) {
     'use strict';
 
+    $("#checkHeadings").on('click', function(){
+
+        let $this = $(this);
+
+        $this.text('Checking').prop('disabled', true);
+        $this.append('<span class="loader loader-sm ml-10"></span>');
+        let siteID = $this.data('id');
+
+        let request;
+
+        if (request) {
+            request.abort();
+        }
+
+        request = $.ajax({
+            url: crawler_ajax_obj.ajaxurl,
+            type: "post",
+            data: {
+                action: 'check_heading_structure',
+                site_id: siteID
+            }
+        });
+
+        request.done(function (response){
+
+            alert(response.data.message);
+            $(".heading-structure").html('');
+
+            if( response.success == true ){
+
+                console.log(response);
+
+                $(".heading-structure").append('<ul style="flex: 0 0 100%;"></ul>');
+                response.data.structure.forEach(function(element){
+                    $(".heading-structure > ul").append(`<li class="${element.valid ? 'valid' : 'invalid'}">
+                        <p class="mb-5 fw-sb fs-14" style="word-break: break-word;">${element.link[0]}</p>
+                        <span class="fs-12">${element.headings.join(', ')}</span>
+                    </li>`);
+                });
+
+            }
+
+        });
+
+    });
+
     if( !$("#keywordDistributionChart").length )
     return;
 

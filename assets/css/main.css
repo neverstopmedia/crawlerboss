@@ -574,6 +574,14 @@ textarea {
     color: orange;
     background-color: #fff7e9;
 }
+.alert-danger{
+    color: red;
+    background-color: #ffe9e9;
+}
+.alert-success{
+    color: #269f2b;
+    background-color: #e9ffeb;
+}
 
 /*--------------------------------------------------------------
 5.0 Search
@@ -2664,6 +2672,12 @@ nav.woocommerce-pagination ul {
     background-color: var(--color-secondary);
     color: #fff;
 }
+.bg-danger{
+    background-color: #ffe9e9;
+}
+.bg-success{
+    background-color: #e9ffeb;
+}
 
 .border {
     border: 1px solid var(--color-borders);
@@ -2744,6 +2758,10 @@ nav.woocommerce-pagination ul {
 
 .d-flex {
     display: flex;
+}
+
+.d-i-flex{
+    display: inline-flex;
 }
 
 .d-block {

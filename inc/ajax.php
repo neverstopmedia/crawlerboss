@@ -1,4 +1,6 @@
 <?php
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Function that is used to simply regenerate all sitemaps for a site
@@ -376,3 +378,98 @@ function generate_keyword_distribution_graph(){
 
 }
 add_action( 'wp_ajax_generate_keyword_distribution_graph', 'generate_keyword_distribution_graph' );
+
+/**
+ * Checks the heading structure of a given site
+ * 
+ * @since 1.0.0
+ */
+function check_heading_structure(){
+
+    $site_id = $_POST['site_id'];
+
+    if( !$site_id )
+    wp_send_json_error( ['message' => 'Invalid site'] );
+    
+    if( !$sitemaps = get_field('sitemaps', $site_id) )
+    wp_send_json_error( ['message' => 'No sitemaps found'] );
+
+    $pages = [];
+
+    foreach( $sitemaps as $sitemap ){
+
+        // Let's not crawl post sitemaps
+        if( strpos($sitemap['sitemap'], 'post') !== false )
+        continue;
+
+        $sitemap_links = simplexml_load_file($sitemap['sitemap'], null, LIBXML_COMPACT);
+        $client = HttpClient::create();
+
+        foreach( $sitemap_links as $key => $link ){
+
+            try{
+
+                $response = $client->request(
+                    'GET',
+                    $link->loc,
+                    [
+                        'max_redirects' => 0,
+                        'timeout'       => 30
+                    ]
+                );
+    
+                if( $response->getStatusCode() != 200 )
+                return false;
+    
+            } catch (TransportExceptionInterface $e) {
+                return false;
+            }
+    
+            if( !$content = $response->getContent() )
+            continue;
+    
+            $crawler = new Crawler($content);
+            
+            if( $headings = $crawler->filterXPath('//h1 | //h2 | //h3 | //h4 | //h5 | //h6')){
+                
+                $structure = [];
+                
+                foreach( $headings as $heading ){
+                    $structure[] = $heading->nodeName;
+                }
+                
+                $isValid = validateHeadings($structure);
+
+                $pages[] = [
+                    'link'      => $link->loc,
+                    'headings'  => $structure,
+                    'valid'     => $isValid
+                ];
+
+            }
+            
+            if( !$crawler->count() )
+            continue;
+
+        }
+
+    }
+
+    if( $pages ){
+
+        // Update the heading structure check date for this site
+        $dt = new DateTime("now", new DateTimeZone('Asia/Dubai'));
+        $dt->setTimestamp(time());
+
+        update_field( 'heading_structure_checked', $dt->format('Y-m-d H:i:s'), $site_id );
+
+        $validity = array_column( $pages, 'valid' );
+        $validity = in_array( false, $validity ) ? 'invalid' : 'valid';
+        update_field( 'validity', $validity, $site_id );
+
+    }
+
+    return wp_send_json_success( [ 'message' => 'Heading processing complete', 'structure' => $pages ] );
+
+}
+add_action( 'wp_ajax_check_heading_structure', 'check_heading_structure' );

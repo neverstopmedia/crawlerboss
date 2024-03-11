@@ -8,6 +8,19 @@
     box-sizing: border-box;
     animation: rotation 1s linear infinite;
 }
+.loader.loader-sm{
+    width: 16px;
+    height: 16px;
+    border: 3px solid #f7f7f7;
+    border-bottom-color: #FF3D00;
+}
+
+.heading-structure .valid{
+    color: #6bc96b;   
+}
+.heading-structure .invalid{
+    color: #ff5757;
+}
 
 @keyframes rotation {
     0% {
@@ -66,6 +79,9 @@
     margin-bottom: 30px;
     height: calc(100% - 30px);
 }
+.card.height-auto{
+    height: auto;
+}
 .card-header{
     padding: 20px;
     border-bottom: 1px solid var(--color-borders);
@@ -81,6 +97,10 @@
 }
 .card-body.limited{
     max-height: 700px;
+    overflow-y: auto;
+}
+.card-body.limited-sm{
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -122,8 +142,7 @@
 }
 
 #keywordDistributionChart{
-    min-height: 400px;
-    height: 100%;
+    height: 400px;
 }
 
 div.dt-container .dt-input{

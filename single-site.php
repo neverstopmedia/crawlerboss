@@ -42,8 +42,11 @@ $last_checked = get_field( 'last_checked' );
         <div class="md-4">
             <?php get_template_part( 'template-parts/crawl-modules/sitemaps' ) ?>
         </div>
-        <div class="md-12">
+        <div class="md-7">
             <?php get_template_part( 'template-parts/crawl-modules/keyword-distribution' ) ?>
+        </div>
+        <div class="md-5">
+            <?php get_template_part( 'template-parts/crawl-modules/heading-structure' ) ?>
         </div>
         <div class="md-8">
             <?php get_template_part( 'template-parts/crawl-modules/opportunities' ) ?>

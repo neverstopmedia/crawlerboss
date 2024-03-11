@@ -332,6 +332,47 @@ function getAbandonedSites(){
 }
 
 /**
+ * Get the sites with invalid heading structure
+ * 
+ * @since 1.0.0
+ */
+function getSitesWithInvalidHeadings(){
+
+    $args = array(
+        'post_type'         => 'site',
+        'posts_per_page'    => -1,
+        'meta_query'        => [
+            [
+                'key' => 'validity',
+                'value' => 'invalid',
+                'compare' => '='
+            ]
+        ]
+    );
+    
+    $query = new WP_Query( $args );
+    $sites = array();
+    
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            $sites[] = [
+                'site'      => get_the_title(),
+                'domain'    => get_field('domain'),
+                'permalink' => get_the_permalink()
+            ];
+    
+        }
+    
+        wp_reset_postdata();
+    }
+
+    return $sites;
+
+}
+
+/**
  * Get the 10 sites that have the most number of links
  * 
  * @since 1.0.0
@@ -459,35 +500,6 @@ function linksTo( $siteID ){
 
 }
 
-function time_elapsed_string($datetime, $full = false) {
-    $now = new DateTime;
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
-
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
-
-    $string = array(
-        'y' => 'year',
-        'm' => 'month',
-        'w' => 'week',
-        'd' => 'day',
-        'h' => 'hour',
-        'i' => 'minute',
-        's' => 'second',
-    );
-    foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-        } else {
-            unset($string[$k]);
-        }
-    }
-
-    if (!$full) $string = array_slice($string, 0, 1);
-    return $string ? implode(', ', $string) : 'just now';
-}
-
 /**
  * Splits up all the sites into an array of arrays that contains $chunkCount sites
  * 
@@ -526,4 +538,72 @@ function getSitesInChunks( $chunkCount = 10 ){
 
     return $sites;
 
+}
+
+/**
+ * Checks if a heading structure is valid
+ * 
+ * @var Array $headings - The heading structure
+ * 
+ * @since 1.0.0
+ */
+function validateHeadings( $headings ){
+
+    if(!$headings)
+    return false;
+
+    $expectedLevel = 1; // Expected level starts at h1 (level 1)
+
+    foreach ($headings as $key => $heading) {
+        $currentLevel = (int) preg_replace('/h(\d)/', '$1', $heading);
+
+        // If the first heading is not an h1
+        if( $key == 0 && $currentLevel != 1 )
+        return false;
+
+        if ($currentLevel == $expectedLevel) {
+            continue;
+        }elseif( $currentLevel > 1 && $currentLevel == $expectedLevel + 1 ){
+            $expectedLevel++;
+        }elseif( $currentLevel > 1 && $currentLevel == $expectedLevel - 1 ){
+            $expectedLevel--;
+        }elseif( $currentLevel < $expectedLevel ){
+            $expectedLevel = $currentLevel;
+        }else{
+            return false;
+        }
+
+    }
+
+    return true;
+
+}
+
+function time_elapsed_string($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    $diff->w = floor($diff->d / 7);
+    $diff->d -= $diff->w * 7;
+
+    $string = array(
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'minute',
+        's' => 'second',
+    );
+    foreach ($string as $k => &$v) {
+        if ($diff->$k) {
+            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) : 'just now';
 }

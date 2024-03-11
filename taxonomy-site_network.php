@@ -47,8 +47,9 @@ $network = get_queried_object();
             while(have_posts()){ 
                 the_post();
                 $last_checked = get_field( 'last_checked' );
+                $validity = get_field('validity');
             ?>
-            <tr class="c-pointer" onclick="window.location.href='<?php echo get_the_permalink() ?>'">
+            <tr class="<?php echo $validity == 'invalid' ? 'bg-danger' : 'bg-success' ?> c-pointer" onclick="window.location.href='<?php echo get_the_permalink() ?>'">
                 <td>
                     <div class="d-flex ai-c jc-b">
                         <div class="d-flex ai-c">

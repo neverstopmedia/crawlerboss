@@ -11,7 +11,6 @@
 	<?php wp_body_open(); ?>
 
     <?php 
-
     if( !is_user_logged_in() ){
         ?>
         <div class="text-center container py-40">

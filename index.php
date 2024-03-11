@@ -72,13 +72,22 @@ $networks = get_terms( array(
             </div>
 
             <div class="md-4">
-                <div class="card">
+                <div class="card height-auto">
                     <div class="card-header">
                         <p class="h6">Top Linked</p>
                         <span class="d-block mt-5 fs-12">Top 10 sites with the most number of backlinks</span>
                     </div>
                     <div class="card-body limited">
                         <?php get_template_part( 'template-parts/crawl-modules/top-linked' ); ?>
+                    </div>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-header">
+                        <p class="h6">Wrong Heading Structure</p>
+                        <span class="d-block mt-5 fs-12">Sites that have a wrong heading structure in any page</span>
+                    </div>
+                    <div class="card-body limited-sm">
+                        <?php get_template_part( 'template-parts/crawl-modules/invalid-headings' ); ?>
                     </div>
                 </div>
             </div>
