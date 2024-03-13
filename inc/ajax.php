@@ -419,10 +419,10 @@ function check_heading_structure(){
                 );
     
                 if( $response->getStatusCode() != 200 )
-                return false;
+                continue;
     
             } catch (TransportExceptionInterface $e) {
-                return false;
+                continue;
             }
     
             if( !$content = $response->getContent() )
