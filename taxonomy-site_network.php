@@ -49,9 +49,9 @@ $network = get_queried_object();
                 $last_checked = get_field( 'last_checked' );
                 $validity = get_field('validity');
             ?>
-            <tr class="<?php echo $validity == 'invalid' ? 'bg-danger' : 'bg-success' ?> c-pointer" onclick="window.location.href='<?php echo get_the_permalink() ?>'">
+            <tr class="<?php echo $validity == 'invalid' ? 'bg-danger' : 'bg-success' ?>">
                 <td>
-                    <div class="d-flex ai-c jc-b">
+                    <a target="_blank" href="<?php echo get_the_permalink() ?>" class="d-flex ai-c jc-b">
                         <div class="d-flex ai-c">
                             <img class="mr-10" src="https://www.google.com/s2/favicons?domain=<?php echo get_field('domain') ?>" alt="Site">
                             <div class="f-1">
@@ -68,10 +68,10 @@ $network = get_queried_object();
                         <?php }else{ ?>
                         <i title="This site was already crawled in the last 7 days" class="tc-s tooltip fa-solid fa-check"></i>
                         <?php } ?>
-                    </div>
+                    </a>
                 </td>
                 <td>
-                    <?php echo get_field('domain') ?>
+                    <a class="h-100 w-100" target="_blank" href="<?php echo get_the_permalink() ?>"><?php echo get_field('domain') ?></a>
                 </td>
                 <td class="html-tooltip">
                     <?php 
