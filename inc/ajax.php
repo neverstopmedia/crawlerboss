@@ -227,6 +227,8 @@ function finalize_crawl(){
     $dt->setTimestamp(time());
     update_field( 'last_checked', $dt->format('Y-m-d H:i:s'), $siteID );
 
+    $siteHistory = get_field( 'site_history', $siteID );
+
     // Let's see if we have some data already
     if( $oldData = get_field( 'field_65cdd29bba666', $siteID ) ){
         $newDataIds = array_column( $newData, 'referer_id' );
@@ -250,6 +252,12 @@ function finalize_crawl(){
                         continue;
                     }
 
+                    $siteHistory[] = [
+                        'history_record_date' => $dt->format('Y-m-d H:i:s'),
+                        'record_domain' => $oldData['link_from'],
+                        'record_status' => 'removed'
+                    ];
+
                     unset( $oldData[$key] );
 
                 }
@@ -262,8 +270,22 @@ function finalize_crawl(){
         $newData = array_merge( $oldData, $newData );
     }
 
+    // Let's add the new links in the history
+    if( $newData ){
+        foreach( $newData as $newItem ){
+            $siteHistory[] = [
+                'history_record_date' => $dt->format('Y-m-d H:i:s'),
+                'record_domain' => $newItem['link_from'],
+                'record_status' => 'added'
+            ];
+        }
+    }
+
     // field_65cdd29bba666 = backlink_data
     update_field( 'field_65cdd29bba666', $newData, $siteID );
+
+    // Site history
+    update_field( 'field_65fd27d06de8c', $siteHistory, $siteID );
 
     wp_send_json_success( [ 'message' => 'Site updated with new crawl data' ] );
 
