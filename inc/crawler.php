@@ -226,7 +226,7 @@ function checkSitemaps( $siteToCrawl, $siteID, $domain, $siteToCrawlSitemaps ){
                         'timeout'       => 30
                     ]
                 );
-    
+
                 // Incase the sitemap is now a 404, 3xx or whatever, lets skip it
                 if( $response->getStatusCode() != 200 )
                 continue;

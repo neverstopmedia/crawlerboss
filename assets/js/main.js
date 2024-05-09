@@ -12,13 +12,8 @@ jQuery(document).ready(function() {
         // Select2
         $('.crawler--select2').on('change', function(){
 
-            let siteID = $(this).val();
-
-            if( siteID ){
-                $("#custom-domain-search-btn").prop('disabled', false);
-            }else{
-                $("#custom-domain-search-btn").prop('disabled', true);
-            }
+            let siteURL = $(this).val();
+            window.location.href = siteURL;
 
         });
 
@@ -28,7 +23,7 @@ jQuery(document).ready(function() {
                 url: crawler_ajax_obj.ajaxurl,
                 dropdownParent: $('#custom-domain-search-form'),
                 dataType: 'json',
-                placeholder: 'Select a daomain',
+                placeholder: 'Select a domain',
                 delay: 250,
                 data: function(params) {
                     return {
@@ -59,7 +54,7 @@ jQuery(document).ready(function() {
         function formatSiteResult(site) {
             if (site.loading) { return 'Searching...'; }
 
-            return `${site.text} <small>Site ID: ${site.id}</small><p><b>Last crawled:</b> ${site.last_checked ? site.last_checked : 'Not crawled yet'}</p>`;
+            return `${site.text} <small>Site ID: ${site.internal_id}</small><p><b>Last crawled:</b> ${site.last_checked ? site.last_checked : 'Not crawled yet'}</p>`;
         }
 
         // Tooltip

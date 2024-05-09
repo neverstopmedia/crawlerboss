@@ -16,6 +16,11 @@ $last_checked = get_field( 'last_checked' );
 ?>
 
 <div class="container py-40">
+
+    <form method="GET" class="d-flex" id="custom-domain-search-form">
+        <select name="domain" data-placeholder="Select a domain" id="siteID" class="crawler--select2"></select>
+    </form>
+    <p class="fs-12 mb-0 mt-10 tc-l mb-40">Search for the site that you want</p>
     
     <div class="d-flex ai-c jc-b mb-40">
         <div>

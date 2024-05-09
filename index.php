@@ -43,15 +43,8 @@ $networks = get_terms( array(
         </div>
         <form method="GET" class="d-flex" id="custom-domain-search-form">
             <select name="domain" data-placeholder="Select a domain" id="siteID" class="crawler--select2"></select>
-            <button type="submit" disabled class="ml-20 btn btn-sm" id="custom-domain-search-btn">Crawl</button>
         </form>
-        <p class="fs-12 mb-0 mt-10 tc-l">This will attempt to find a link on every single site we own</p>
-
-        <div class="mt-40 crawl--results">
-            <div class="text-center">
-                Select a domain, and press on Crawl to start crawling a website
-            </div>
-        </div>
+        <p class="fs-12 mb-0 mt-10 tc-l">Search for the site that you want</p>
 
     </div>
     <?php } ?>
