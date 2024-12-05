@@ -112,11 +112,13 @@ function getBacklinkDistributionByNetwork( $backlinks ){
     $distribution = [];
 
     foreach( $backlinks as $backlink ){
-        $network = getFirstTaxTerm( $backlink['referer_id'], 'site_network' );
-
-        $slug = str_replace( '-', '_', $network->slug );
         
-        $distribution[$slug] = isset( $distribution[$slug] ) ? $distribution[$slug] + 1 : 1;
+        if( $network = getFirstTaxTerm( $backlink['referer_id'], 'site_network' ) ){
+
+            $slug = str_replace( '-', '_', $network->slug );
+            $distribution[$slug] = isset( $distribution[$slug] ) ? $distribution[$slug] + 1 : 1;
+
+        }
 
     }
 
