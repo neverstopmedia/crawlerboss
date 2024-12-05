@@ -26,3 +26,37 @@ function updateSitemapOnSave( $post_id, $post ){
 
 }
 add_action( 'save_post', 'updateSitemapOnSave', 10, 2 );
+
+ // Add the custom columns to the car post type:
+function site_admin_table_columns($columns) {
+
+    $columns['networks'] = __( 'Networks', 'luxcars' );
+
+    return $columns;
+}
+add_filter( 'manage_site_posts_columns', 'site_admin_table_columns' );
+
+// Add the data to the custom columns for the car post type:
+function site_admin_table_columns_data( $column, $post_id ) {
+
+    switch ( $column ) {
+
+        case 'networks' :
+            if($networks = getTaxTerms( $post_id, 'site_network' )){
+                foreach( $networks as $network ){
+                    echo '<span style="display: block;">'.$network->name.'</span>';
+                }
+            }else{
+                echo '-';
+            }
+            break;
+            foreach($prices as $key => $price){
+                if($price == 0)
+                continue;
+
+                echo '<span class="d-block luxcars-car-price">'.str_replace("_", '-', $key).' Days: '.$currency.' '.$price.'</span>';
+            }
+            break;
+    }
+}
+add_action( 'manage_site_posts_custom_column' , 'site_admin_table_columns_data', 10, 2 );

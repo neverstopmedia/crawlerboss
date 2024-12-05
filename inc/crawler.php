@@ -25,7 +25,7 @@ function setParentSitemap( $url, $siteID, $suffix = null ){
         'GET',
         $url,
         [
-            'max_redirects' => 0
+            'max_redirects' => 1
         ]
     );
     // Let's get the status code for the request
