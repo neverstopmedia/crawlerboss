@@ -94,7 +94,7 @@ function setInnerSitemaps( $sitemapURL, $siteID, $cronKey = null ){
 
     $sitemaps   = [];
     $flag       = false;
-    $to_skip    = ['local', 'video', 'attachment', 'news', 'category', 'tag', 'author'];
+    $to_skip    = ['local', 'video', 'attachment', 'news', 'category', 'tag', 'author', 'misc'];
 
     foreach( $xml as $item ){
 
